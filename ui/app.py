@@ -35,156 +35,186 @@ st.set_page_config(
 # Custom CSS
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
 
-    /* Global Font & Body */
+    /* Global Settings */
     html, body, [class*="css"] {
-        font-family: 'Exo 2', sans-serif !important;
+        font-family: 'Inter', sans-serif !important;
+        color: #e0e0e0;
     }
     
-    /* Main Background - Dark Meteor City Vibe */
+    /* Main Background */
     .stApp {
-        background: linear-gradient(135deg, #050505 0%, #1a0b1a 100%);
-        color: #d1d1d1;
+        background-color: #0e1117; /* Standard clean dark background */
+        background-image: none;
     }
     
-    /* Sidebar - Spider Base */
+    /* Sidebar */
     section[data-testid="stSidebar"] {
-        background-color: #0a050a;
-        border-right: 1px solid #4a0e4a;
-        box-shadow: 2px 0 20px rgba(138, 43, 226, 0.1);
+        background-color: #161b22;
+        border-right: 1px solid #30363d;
+        box-shadow: none;
     }
     
-    /* Headings - Chrollo's Aura (Violet to Crimson) */
+    /* Headings - Clean White */
     h1, h2, h3 {
-        font-weight: 800 !important;
-        background: linear-gradient(90deg, #9b59b6, #e74c3c); /* Violet to Red */
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        padding-bottom: 5px;
-        text-shadow: 0 0 20px rgba(155, 89, 182, 0.2);
+        font-weight: 600 !important;
+        color: #ffffff !important;
+        background: none;
+        -webkit-text-fill-color: initial;
+        letter-spacing: -0.5px;
+        text-transform: none;
+        text-shadow: none;
     }
     
     /* Paragraphs */
     p, .stMarkdown {
-        color: #b0b0b0;
-        font-size: 1.05rem;
+        color: #a0a0a0;
+        font-size: 1rem;
+        font-weight: 400;
     }
 
-    /* Buttons - Spider Tattoo Style */
+    /* Buttons - Minimalist White/Grey */
     .stButton button {
-        background: linear-gradient(135deg, #8e44ad 0%, #c0392b 100%);
-        color: #e0e0e0;
-        border: 1px solid #9b59b6;
-        border-radius: 2px;
-        padding: 0.75rem 2rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(142, 68, 173, 0.3);
+        background-color: #f0f0f0;
+        color: #0e1117;
+        border: 1px solid #f0f0f0;
+        border-radius: 6px;
+        padding: 0.5rem 1rem;
+        font-weight: 500;
+        text-transform: none;
+        letter-spacing: normal;
+        box-shadow: none;
+        transition: background-color 0.2s;
+        clip-path: none;
     }
     .stButton button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 0 25px rgba(231, 76, 60, 0.5);
-        background: linear-gradient(135deg, #9b59b6 0%, #e74c3c 100%);
-        color: #fff;
-        border-color: #e74c3c;
+        background-color: #ffffff;
+        border-color: #ffffff;
+        transform: none;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .stButton button:active {
+        background-color: #e0e0e0;
     }
     .stButton button:disabled {
-        background: #2c2c2c;
-        border-color: #444;
-        color: #666;
+        background-color: #2b313a;
+        border-color: #2b313a;
+        color: #6e7681;
     }
 
-    /* Inputs - Dark Nen Contracts */
+    /* Inputs - Clean Dark */
     .stTextInput input, .stSelectbox div[data-baseweb="select"] {
-        background-color: #0f0f15;
-        color: #e74c3c; /* Crimson Text */
-        border: 1px solid #4a0e4a;
-        border-radius: 2px;
-        font-family: 'Courier New', monospace;
+        background-color: #0d1117;
+        color: #c9d1d9;
+        border: 1px solid #30363d;
+        border-radius: 6px;
+        font-family: 'Inter', sans-serif;
     }
     .stTextInput input:focus, .stSelectbox div[data-baseweb="select"]:focus-within {
-        border-color: #e74c3c;
-        box-shadow: 0 0 10px rgba(231, 76, 60, 0.3);
+        border-color: #58a6ff;
+        box-shadow: none;
+    }
+    
+    /* Checkboxes */
+    .stCheckbox label span[role="checkbox"][aria-checked="true"] {
+        background-color: #58a6ff !important;
+        border-color: #58a6ff !important;
     }
 
-    /* Metrics - Spider Legs Borders */
+    /* Cards / Metrics */
     div[data-testid="stMetric"] {
-        background-color: rgba(20, 10, 20, 0.8);
-        border: 1px solid #4a0e4a;
-        border-left: 3px solid #9b59b6;
+        background-color: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 6px;
         padding: 1rem;
+        border-left: none; /* Removed colored accents */
     }
     div[data-testid="stMetricLabel"] {
-        color: #9b59b6;
-        font-weight: 700;
-        text-transform: uppercase;
-        font-size: 0.8rem;
+        color: #8b949e;
+        font-weight: 400;
+        text-transform: none;
+        font-size: 0.875rem;
     }
     div[data-testid="stMetricValue"] {
-        color: #f0f0f0;
-        font-weight: 700;
-        text-shadow: 0 0 10px rgba(155, 89, 182, 0.3);
+        color: #f0f6fc;
+        font-weight: 600;
+        text-shadow: none;
     }
 
-    /* Sliders - Feitan's Pain Packer (Red/Violet) */
+    /* Sliders - Standard Blue/Grey Accent */
     div[data-baseweb="slider"] {
-        padding-top: 2rem !important;
+        padding-top: 1.5rem !important;
     }
     div[data-baseweb="slider"] div[role="slider"] {
-        background-color: #e74c3c !important; /* Red thumb */
-        box-shadow: 0 0 10px rgba(231, 76, 60, 0.5);
+        background-color: #58a6ff !important;
+        box-shadow: none;
     }
     div[data-baseweb="slider"] div[data-testid="stTickBar"] div {
-        background-color: #444;
+        background-color: #30363d;
     }
     div[data-baseweb="slider"] div {
         background-color: transparent !important;
     }
-    /* Re-add track color */
     div[data-baseweb="slider"] div[data-testid="stSliderTrack"] {
-        background-color: rgba(155, 89, 182, 0.4) !important; /* Violet track */
+        background-color: #30363d !important;
     }
-    /* Value labels */
+    /* Value Labels */
     .stSlider [data-testid="stMarkdownContainer"] p {
-        color: #e74c3c !important; /* Crimson values */
-        font-weight: 800 !important;
+        color: #c9d1d9 !important;
+        font-weight: 500 !important;
+        font-size: 1rem !important;
+        text-shadow: none;
     }
 
     /* Progress Bar */
     .stProgress > div > div > div > div {
-        background: linear-gradient(90deg, #8e44ad, #e74c3c);
+        background: #58a6ff; /* Clean Blue */
+        box-shadow: none;
     }
 
     /* Expanders */
     .streamlit-expanderHeader {
-        background-color: #0f0a15;
-        border: 1px solid #4a0e4a;
-        color: #9b59b6;
+        background-color: #161b22;
+        border: 1px solid #30363d;
+        color: #c9d1d9;
+        border-radius: 6px;
     }
     .streamlit-expanderContent {
-        background-color: #080408;
-        border: 1px solid #333;
+        background-color: #0d1117;
+        border: 1px solid #30363d;
         border-top: none;
+        border-radius: 0 0 6px 6px;
     }
     
     /* Tabs */
     .stTabs [data-baseweb="tab-list"] {
-        gap: 15px;
-        border-bottom: 1px solid #4a0e4a;
+        gap: 20px;
+        border-bottom: 1px solid #30363d;
     }
     .stTabs [data-baseweb="tab"] {
-        color: #666;
-        font-weight: 700;
-        text-transform: uppercase;
+        color: #8b949e;
+        font-weight: 500;
+        background-color: transparent;
+        text-transform: none;
+        padding-bottom: 10px;
     }
     .stTabs [aria-selected="true"] {
-        color: #e74c3c !important;
-        border-bottom: 2px solid #e74c3c !important;
+        color: #58a6ff !important;
+        border-bottom: 2px solid #58a6ff !important;
+        background-color: transparent !important;
+    }
+    
+    /* Links */
+    a {
+        color: #58a6ff !important;
+        text-decoration: none;
+        font-weight: 400;
+        text-shadow: none;
+    }
+    a:hover {
+        text-decoration: underline;
+        text-shadow: none;
     }
 </style>
 """, unsafe_allow_html=True)
