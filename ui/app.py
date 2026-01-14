@@ -42,160 +42,149 @@ st.markdown("""
         font-family: 'Exo 2', sans-serif !important;
     }
     
-    /* Main Background - Dark Nen Aura */
+    /* Main Background - Dark Meteor City Vibe */
     .stApp {
-        background: linear-gradient(135deg, #0d0d0d 0%, #1a1a2e 100%);
-        color: #e0e0e0;
+        background: linear-gradient(135deg, #050505 0%, #1a0b1a 100%);
+        color: #d1d1d1;
     }
     
-    /* Sidebar - Hunter License Style */
+    /* Sidebar - Spider Base */
     section[data-testid="stSidebar"] {
-        background-color: #111116;
-        border-right: 2px solid #00ff88;
-        box-shadow: 2px 0 20px rgba(0, 255, 136, 0.1);
+        background-color: #0a050a;
+        border-right: 1px solid #4a0e4a;
+        box-shadow: 2px 0 20px rgba(138, 43, 226, 0.1);
     }
     
-    /* Headings - Gon's Jajanken Green & Killua's Lightning */
+    /* Headings - Chrollo's Aura (Violet to Crimson) */
     h1, h2, h3 {
         font-weight: 800 !important;
-        background: linear-gradient(90deg, #00ff88, #00b8ff);
+        background: linear-gradient(90deg, #9b59b6, #e74c3c); /* Violet to Red */
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         text-transform: uppercase;
-        font-style: italic;
         letter-spacing: 1px;
+        padding-bottom: 5px;
+        text-shadow: 0 0 20px rgba(155, 89, 182, 0.2);
     }
     
     /* Paragraphs */
     p, .stMarkdown {
-        color: #cfcfcf;
+        color: #b0b0b0;
         font-size: 1.05rem;
     }
 
-    /* Buttons - Hunter Association Card Style */
+    /* Buttons - Spider Tattoo Style */
     .stButton button {
-        background: linear-gradient(135deg, #00ff88 0%, #009955 100%);
-        color: #000;
-        border: 2px solid #00ff88;
-        border-radius: 4px;
+        background: linear-gradient(135deg, #8e44ad 0%, #c0392b 100%);
+        color: #e0e0e0;
+        border: 1px solid #9b59b6;
+        border-radius: 2px;
         padding: 0.75rem 2rem;
-        font-weight: 800;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-        clip-path: polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%);
-        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-    .stButton button:hover {
-        transform: scale(1.05) skew(-5deg);
-        box-shadow: 0 0 25px rgba(0, 255, 136, 0.6);
-        background: #fff;
-        color: #009955;
-    }
-    .stButton button:active {
-        transform: scale(0.95);
-    }
-
-    /* Inputs - Hisoka's Texture Surprise */
-    .stTextInput input, .stSelectbox div[data-baseweb="select"] {
-        background-color: #1a1a2e;
-        color: #ff0055; /* Hisoka Pink */
-        border: 2px solid #333;
-        border-radius: 0;
-        font-family: 'Courier New', monospace;
-        font-weight: bold;
-    }
-    .stTextInput input:focus, .stSelectbox div[data-baseweb="select"]:focus-within {
-        border-color: #ff0055;
-        box-shadow: 0 0 15px rgba(255, 0, 85, 0.4);
-    }
-
-    /* Metrics - Nen Chart Hexagon Style (Simulated) */
-    div[data-testid="stMetric"] {
-        background-color: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(0, 255, 136, 0.3);
-        border-left: 4px solid #00ff88;
-        padding: 1rem;
-        transition: 0.3s;
-    }
-    div[data-testid="stMetric"]:hover {
-        background-color: rgba(0, 255, 136, 0.1);
-        border-color: #00ff88;
-        transform: translateY(-5px);
-    }
-    div[data-testid="stMetricLabel"] {
-        color: #00ff88;
         font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 1px;
+        letter-spacing: 2px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(142, 68, 173, 0.3);
     }
-    div[data-testid="stMetricValue"] {
+    .stButton button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0 25px rgba(231, 76, 60, 0.5);
+        background: linear-gradient(135deg, #9b59b6 0%, #e74c3c 100%);
         color: #fff;
-        font-family: 'Exo 2', sans-serif;
-        font-weight: 800;
-        text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        border-color: #e74c3c;
+    }
+    .stButton button:disabled {
+        background: #2c2c2c;
+        border-color: #444;
+        color: #666;
     }
 
-    /* Sliders - Killua's Lightning Blue (Fixed Visibility v2) */
+    /* Inputs - Dark Nen Contracts */
+    .stTextInput input, .stSelectbox div[data-baseweb="select"] {
+        background-color: #0f0f15;
+        color: #e74c3c; /* Crimson Text */
+        border: 1px solid #4a0e4a;
+        border-radius: 2px;
+        font-family: 'Courier New', monospace;
+    }
+    .stTextInput input:focus, .stSelectbox div[data-baseweb="select"]:focus-within {
+        border-color: #e74c3c;
+        box-shadow: 0 0 10px rgba(231, 76, 60, 0.3);
+    }
+
+    /* Metrics - Spider Legs Borders */
+    div[data-testid="stMetric"] {
+        background-color: rgba(20, 10, 20, 0.8);
+        border: 1px solid #4a0e4a;
+        border-left: 3px solid #9b59b6;
+        padding: 1rem;
+    }
+    div[data-testid="stMetricLabel"] {
+        color: #9b59b6;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+    }
+    div[data-testid="stMetricValue"] {
+        color: #f0f0f0;
+        font-weight: 700;
+        text-shadow: 0 0 10px rgba(155, 89, 182, 0.3);
+    }
+
+    /* Sliders - Feitan's Pain Packer (Red/Violet) */
     div[data-baseweb="slider"] {
-        padding-top: 2rem !important; /* More space for values */
+        padding-top: 2rem !important;
     }
     div[data-baseweb="slider"] div[role="slider"] {
-        background-color: #00b8ff !important;
-        box-shadow: 0 0 10px rgba(0, 184, 255, 0.4);
+        background-color: #e74c3c !important; /* Red thumb */
+        box-shadow: 0 0 10px rgba(231, 76, 60, 0.5);
     }
     div[data-baseweb="slider"] div[data-testid="stTickBar"] div {
         background-color: #444;
     }
     div[data-baseweb="slider"] div {
-        background-color: transparent !important; /* Remove blue rectangle */
+        background-color: transparent !important;
     }
-    /* Re-add track color specifically to the track line */
+    /* Re-add track color */
     div[data-baseweb="slider"] div[data-testid="stSliderTrack"] {
-        background-color: rgba(0, 184, 255, 0.3) !important;
+        background-color: rgba(155, 89, 182, 0.4) !important; /* Violet track */
     }
-    /* Force Value Labels to White & Visible */
-    div[data-testid="stMarkdownContainer"] p {
-        color: #e0e0e0; /* Default text color */
-    }
-    /* Target the specific slider value labels if possible, or generally boost contrast */
+    /* Value labels */
     .stSlider [data-testid="stMarkdownContainer"] p {
-        color: #ffffff !important;
+        color: #e74c3c !important; /* Crimson values */
         font-weight: 800 !important;
-        font-size: 1.1rem !important;
-        text-shadow: 0 1px 2px rgba(0,0,0,0.8);
     }
 
-    /* Progress Bar - Gon's Aura */
+    /* Progress Bar */
     .stProgress > div > div > div > div {
+        background: linear-gradient(90deg, #8e44ad, #e74c3c);
+    }
+
+    /* Expanders */
+    .streamlit-expanderHeader {
+        background-color: #0f0a15;
+        border: 1px solid #4a0e4a;
+        color: #9b59b6;
+    }
+    .streamlit-expanderContent {
+        background-color: #080408;
+        border: 1px solid #333;
+        border-top: none;
     }
     
-    /* Custom alerts */
-    .stAlert {
-        border-radius: 10px;
-        background-color: rgba(25, 30, 45, 0.9);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-    }
-    
-    /* Tab styling */
+    /* Tabs */
     .stTabs [data-baseweb="tab-list"] {
-        gap: 8px;
-        background-color: transparent;
+        gap: 15px;
+        border-bottom: 1px solid #4a0e4a;
     }
     .stTabs [data-baseweb="tab"] {
-        height: 50px;
-        white-space: pre-wrap;
-        background-color: rgba(255, 255, 255, 0.03);
-        border-radius: 8px 8px 0 0;
-        gap: 1px;
-        padding-top: 10px;
-        padding-bottom: 10px;
-        color: #94A3B8;
-        border: none;
+        color: #666;
+        font-weight: 700;
+        text-transform: uppercase;
     }
     .stTabs [aria-selected="true"] {
-        background-color: rgba(76, 175, 80, 0.1) !important;
-        color: #4CAF50 !important;
-        border-bottom: 2px solid #4CAF50 !important;
+        color: #e74c3c !important;
+        border-bottom: 2px solid #e74c3c !important;
     }
 </style>
 """, unsafe_allow_html=True)
