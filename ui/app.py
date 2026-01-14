@@ -35,13 +35,154 @@ st.set_page_config(
 # Custom CSS
 st.markdown("""
 <style>
-    .stProgress > div > div > div > div {
-        background-color: #4CAF50;
+    /* Main Layout & Background */
+    .stApp {
+        background: radial-gradient(circle at 10% 20%, rgb(18, 28, 45) 0%, rgb(11, 15, 25) 90%);
+        color: #E6EAF1;
     }
-    .opportunity-score {
-        font-size: 24px;
-        font-weight: bold;
-        color: #4CAF50;
+    
+    /* Headers & Text */
+    h1, h2, h3 {
+        font-family: 'Inter', sans-serif;
+        font-weight: 700 !important;
+        background: linear-gradient(90deg, #4CAF50, #00C853);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        padding-bottom: 0.5rem;
+    }
+    
+    p, .stMarkdown {
+        font-family: 'Inter', sans-serif;
+        font-size: 1.05rem;
+        color: #B0B8C8;
+    }
+
+    /* Sidebar Styling */
+    section[data-testid="stSidebar"] {
+        background-color: rgb(15, 20, 30);
+        border-right: 1px solid rgba(76, 175, 80, 0.1);
+    }
+    
+    /* Buttons */
+    .stButton button {
+        background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 14px 0 rgba(76, 175, 80, 0.39);
+    }
+    .stButton button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(76, 175, 80, 0.23);
+        background: linear-gradient(135deg, #66BB6A 0%, #43A047 100%);
+    }
+    .stButton button:disabled {
+        background: #2d3748;
+        color: #718096;
+    }
+
+    /* Cards / Expanders */
+    .streamlit-expanderHeader {
+        background-color: rgba(255, 255, 255, 0.03);
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        color: #E2E8F0;
+        font-weight: 500;
+    }
+    .streamlit-expanderContent {
+        background-color: rgba(0, 0, 0, 0.2);
+        border-radius: 0 0 10px 10px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-top: none;
+        padding: 1rem;
+    }
+
+    /* Metrics styling */
+    div[data-testid="stMetric"] {
+        background-color: rgba(255, 255, 255, 0.03);
+        padding: 1rem;
+        border-radius: 12px;
+        border: 1px solid rgba(76, 175, 80, 0.1);
+        text-align: center;
+        transition: 0.3s;
+    }
+    div[data-testid="stMetric"]:hover {
+        background-color: rgba(255, 255, 255, 0.06);
+        border-color: rgba(76, 175, 80, 0.3);
+    }
+    div[data-testid="stMetricLabel"] {
+        color: #94A3B8;
+        font-size: 0.9rem;
+    }
+    div[data-testid="stMetricValue"] {
+        color: #FFFFFF;
+        font-weight: 700;
+        font-size: 1.5rem;
+    }
+
+    /* Progress Bar */
+    .stProgress > div > div > div > div {
+        background: linear-gradient(90deg, #4CAF50, #00E676);
+        border-radius: 10px;
+    }
+
+    /* Checkboxes & Inputs */
+    .stCheckbox label {
+        color: #E2E8F0;
+    }
+    .stTextInput input {
+        background-color: rgba(255, 255, 255, 0.05);
+        color: #FFFFFF;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+    }
+    .stTextInput input:focus {
+        border-color: #4CAF50;
+        box-shadow: 0 0 0 1px #4CAF50;
+    }
+
+    /* DataFrame styling */
+    [data-testid="stDataFrame"] {
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    
+    /* Dividers */
+    hr {
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    /* Custom alerts */
+    .stAlert {
+        border-radius: 10px;
+        background-color: rgba(25, 30, 45, 0.9);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    /* Tab styling */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 8px;
+        background-color: transparent;
+    }
+    .stTabs [data-baseweb="tab"] {
+        height: 50px;
+        white-space: pre-wrap;
+        background-color: rgba(255, 255, 255, 0.03);
+        border-radius: 8px 8px 0 0;
+        gap: 1px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+        color: #94A3B8;
+        border: none;
+    }
+    .stTabs [aria-selected="true"] {
+        background-color: rgba(76, 175, 80, 0.1) !important;
+        color: #4CAF50 !important;
+        border-bottom: 2px solid #4CAF50 !important;
     }
 </style>
 """, unsafe_allow_html=True)
