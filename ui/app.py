@@ -135,13 +135,24 @@ st.markdown("""
         text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
     }
 
-    /* Sliders - Killua's Lightning Blue */
+    /* Sliders - Killua's Lightning Blue (Fixed Visibility) */
+    div[data-baseweb="slider"] {
+        padding-top: 1.5rem !important; /* Make space for values */
+    }
     div[data-baseweb="slider"] div[role="slider"] {
         background-color: #00b8ff !important;
-        box-shadow: 0 0 10px #00b8ff, 0 0 20px #00b8ff;
+        box-shadow: 0 0 10px rgba(0, 184, 255, 0.5); /* Reduced glow */
+    }
+    div[data-baseweb="slider"] div[data-testid="stTickBar"] div {
+        background-color: #444;
     }
     div[data-baseweb="slider"] div {
-        background-color: #00b8ff;
+        background-color: rgba(0, 184, 255, 0.3); /* Track color */
+    }
+    /* Value labels */
+    div[data-testid="stMarkdownContainer"] p {
+        color: #e0e0e0 !important;
+        font-weight: 600;
     }
 
     /* Progress Bar - Gon's Aura */
