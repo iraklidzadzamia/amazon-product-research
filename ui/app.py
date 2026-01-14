@@ -147,7 +147,11 @@ st.markdown("""
         background-color: #444;
     }
     div[data-baseweb="slider"] div {
-        background-color: rgba(0, 184, 255, 0.2); /* Very subtle track */
+        background-color: transparent !important; /* Remove blue rectangle */
+    }
+    /* Re-add track color specifically to the track line */
+    div[data-baseweb="slider"] div[data-testid="stSliderTrack"] {
+        background-color: rgba(0, 184, 255, 0.3) !important;
     }
     /* Force Value Labels to White & Visible */
     div[data-testid="stMarkdownContainer"] p {
