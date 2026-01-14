@@ -1,0 +1,22 @@
+# Environment and secrets
+.env
+credentials.json
+token.json
+
+# Temporary files (always regenerated)
+.tmp/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+venv/
+.venv/
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/

@@ -1,0 +1,5 @@
+# Amazon Product Research Tool - Dependencies
+streamlit>=1.28.0
+pandas>=2.0.0
+apify-client>=1.0.0
+python-dotenv>=1.0.0
