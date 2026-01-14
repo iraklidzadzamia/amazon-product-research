@@ -35,166 +35,146 @@ st.set_page_config(
 # Custom CSS
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600;700;800&display=swap');
 
     /* Global Font & Body */
     html, body, [class*="css"] {
-        font-family: 'Montserrat', sans-serif !important;
+        font-family: 'Exo 2', sans-serif !important;
     }
     
-    /* Main Layout - Deep Elegant Black */
+    /* Main Background - Dark Nen Aura */
     .stApp {
-        background-color: #0A0A0A;
-        color: #E0E0E0;
+        background: linear-gradient(135deg, #0d0d0d 0%, #1a1a2e 100%);
+        color: #e0e0e0;
     }
     
-    /* Sidebar - Slightly lighter black */
+    /* Sidebar - Hunter License Style */
     section[data-testid="stSidebar"] {
-        background-color: #111111;
-        border-right: 1px solid #333;
+        background-color: #111116;
+        border-right: 2px solid #00ff88;
+        box-shadow: 2px 0 20px rgba(0, 255, 136, 0.1);
     }
     
-    /* Headings - Gold Gradient */
+    /* Headings - Gon's Jajanken Green & Killua's Lightning */
     h1, h2, h3 {
-        font-family: 'Montserrat', sans-serif;
-        font-weight: 700 !important;
-        background: linear-gradient(45deg, #D4AF37, #F2D06B, #D4AF37);
+        font-weight: 800 !important;
+        background: linear-gradient(90deg, #00ff88, #00b8ff);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        letter-spacing: -0.5px;
-        padding-bottom: 0.5rem;
+        text-transform: uppercase;
+        font-style: italic;
+        letter-spacing: 1px;
     }
     
     /* Paragraphs */
     p, .stMarkdown {
-        color: #CCCCCC;
-        font-weight: 300;
-        line-height: 1.6;
+        color: #cfcfcf;
+        font-size: 1.05rem;
     }
 
-    /* Buttons - Premium Gold */
+    /* Buttons - Hunter Association Card Style */
     .stButton button {
-        background: linear-gradient(135deg, #C5A028 0%, #E5C558 100%);
-        color: #000000;
-        border: none;
+        background: linear-gradient(135deg, #00ff88 0%, #009955 100%);
+        color: #000;
+        border: 2px solid #00ff88;
         border-radius: 4px;
         padding: 0.75rem 2rem;
-        font-weight: 600;
-        letter-spacing: 0.5px;
-        transition: all 0.3s ease;
+        font-weight: 800;
         text-transform: uppercase;
-        font-size: 0.9rem;
+        letter-spacing: 2px;
+        clip-path: polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%);
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
     .stButton button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
-        background: linear-gradient(135deg, #D4AF37 0%, #F2D06B 100%);
+        transform: scale(1.05) skew(-5deg);
+        box-shadow: 0 0 25px rgba(0, 255, 136, 0.6);
+        background: #fff;
+        color: #009955;
     }
     .stButton button:active {
-        transform: translateY(0);
-    }
-    .stButton button:disabled {
-        background: #333;
-        color: #666;
+        transform: scale(0.95);
     }
 
-    /* Inputs & Selects - Minimalist */
+    /* Inputs - Hisoka's Texture Surprise */
     .stTextInput input, .stSelectbox div[data-baseweb="select"] {
-        background-color: #1A1A1A;
-        color: #FFF;
-        border: 1px solid #333;
-        border-radius: 4px;
+        background-color: #1a1a2e;
+        color: #ff0055; /* Hisoka Pink */
+        border: 2px solid #333;
+        border-radius: 0;
+        font-family: 'Courier New', monospace;
+        font-weight: bold;
     }
     .stTextInput input:focus, .stSelectbox div[data-baseweb="select"]:focus-within {
-        border-color: #D4AF37;
-        box-shadow: 0 0 0 1px #D4AF37;
-    }
-    
-    /* Checkboxes - Gold Accent */
-    .stCheckbox label span[role="checkbox"][aria-checked="true"] {
-        background-color: #D4AF37 !important;
-        border-color: #D4AF37 !important;
+        border-color: #ff0055;
+        box-shadow: 0 0 15px rgba(255, 0, 85, 0.4);
     }
 
-    /* Cards / Expanders - Sleek Borders */
-    .streamlit-expanderHeader {
-        background-color: #111;
-        border: 1px solid #333;
-        border-radius: 4px;
-        color: #D4AF37;
-        font-weight: 500;
-    }
-    .streamlit-expanderContent {
-        background-color: #0F0F0F;
-        border: 1px solid #333;
-        border-top: none;
-        border-radius: 0 0 4px 4px;
-        color: #DDD;
-    }
-
-    /* Metrics - Luxury Cards */
+    /* Metrics - Nen Chart Hexagon Style (Simulated) */
     div[data-testid="stMetric"] {
-        background-color: #111;
-        border: 1px solid #222;
+        background-color: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(0, 255, 136, 0.3);
+        border-left: 4px solid #00ff88;
         padding: 1rem;
-        border-radius: 4px;
-        border-left: 3px solid #D4AF37;
+        transition: 0.3s;
+    }
+    div[data-testid="stMetric"]:hover {
+        background-color: rgba(0, 255, 136, 0.1);
+        border-color: #00ff88;
+        transform: translateY(-5px);
     }
     div[data-testid="stMetricLabel"] {
-        color: #888;
+        color: #00ff88;
+        font-weight: 700;
         text-transform: uppercase;
-        font-size: 0.75rem;
         letter-spacing: 1px;
     }
     div[data-testid="stMetricValue"] {
-        color: #FFF;
-        font-weight: 600;
+        color: #fff;
+        font-family: 'Exo 2', sans-serif;
+        font-weight: 800;
+        text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
     }
 
-    /* Sliders - Gold Track */
+    /* Sliders - Killua's Lightning Blue */
     div[data-baseweb="slider"] div[role="slider"] {
-        background-color: #D4AF37 !important;
-    }
-    div[data-baseweb="slider"] div[data-testid="stTickBar"] div {
-        background-color: #444;
+        background-color: #00b8ff !important;
+        box-shadow: 0 0 10px #00b8ff, 0 0 20px #00b8ff;
     }
     div[data-baseweb="slider"] div {
-        background-color: #D4AF37;
+        background-color: #00b8ff;
     }
 
-    /* Progress Bar */
+    /* Progress Bar - Gon's Aura */
     .stProgress > div > div > div > div {
-        background: linear-gradient(90deg, #C5A028, #F2D06B);
-        border-radius: 4px;
     }
-
-    /* Tabs */
+    
+    /* Custom alerts */
+    .stAlert {
+        border-radius: 10px;
+        background-color: rgba(25, 30, 45, 0.9);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    /* Tab styling */
     .stTabs [data-baseweb="tab-list"] {
-        gap: 20px;
-        border-bottom: 1px solid #333;
+        gap: 8px;
+        background-color: transparent;
     }
     .stTabs [data-baseweb="tab"] {
-        height: 60px;
-        background-color: transparent;
-        color: #666;
-        font-weight: 600;
-        text-transform: uppercase;
-        font-size: 0.85rem;
-        letter-spacing: 1px;
+        height: 50px;
+        white-space: pre-wrap;
+        background-color: rgba(255, 255, 255, 0.03);
+        border-radius: 8px 8px 0 0;
+        gap: 1px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+        color: #94A3B8;
         border: none;
     }
     .stTabs [aria-selected="true"] {
-        color: #D4AF37 !important;
-        border-bottom: 2px solid #D4AF37 !important;
-    }
-    
-    /* DataFrame Styling */
-    [data-testid="stDataFrame"] {
-        border: 1px solid #333;
-    }
-    
-    iframe {
-        border: 1px solid #333;
+        background-color: rgba(76, 175, 80, 0.1) !important;
+        color: #4CAF50 !important;
+        border-bottom: 2px solid #4CAF50 !important;
     }
 </style>
 """, unsafe_allow_html=True)
