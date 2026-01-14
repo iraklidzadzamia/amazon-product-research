@@ -178,28 +178,124 @@ def main():
                     st.session_state.analysis_params = {
                         'source': market_options[source_market],
                         'target': market_options[target_market],
+                        'source_code': source_market,
+                        'target_code': target_market,
                         'time': datetime.now().strftime('%H:%M:%S')
                     }
         
-        # Show cached results if available
+        # Show cached results if available (with unique key prefix)
         if st.session_state.analysis_results:
             params = st.session_state.analysis_params
             st.success(f"📊 Showing cached results from {params['time']} ({params['source']} → {params['target']})")
             display_results(
                 st.session_state.analysis_results,
-                source_market, target_market, market_options
+                params.get('source_code', source_market),
+                params.get('target_code', target_market),
+                market_options,
+                key_prefix="cached_"
             )
             
             # Clear cache button
-            if st.button("🗑️ Clear cached results"):
+            if st.button("🗑️ Clear cached results", key="clear_cache_btn"):
                 st.session_state.analysis_results = None
                 st.session_state.analysis_params = None
                 st.rerun()
     
     with tab2:
-        st.header("🔍 Product Search")
-        st.markdown("*Coming soon!*")
-        st.info("This feature will allow you to search for a specific product across all markets.")
+        render_product_search(market_options)
+
+
+def render_product_search(market_options):
+    """Render the Product Search tab."""
+    st.header("🔍 Product Search")
+    st.markdown("Search for a specific product across multiple Amazon markets")
+    
+    # Search input
+    search_query = st.text_input(
+        "Product name or keywords",
+        placeholder="e.g., wireless earbuds, rice cooker, yoga mat...",
+        key="product_search_input"
+    )
+    
+    # Market selection for search
+    st.subheader("🌍 Select markets to search")
+    
+    search_markets = []
+    cols = st.columns(4)
+    for i, (code, info) in enumerate(MARKETS.items()):
+        with cols[i % 4]:
+            if st.checkbox(f"{info['flag']} {info['name']}", value=(code in ['us', 'jp']), key=f"search_market_{code}"):
+                search_markets.append(code)
+    
+    # Search button
+    if st.button("🔎 Search", type="primary", disabled=not search_query or not search_markets, key="search_btn"):
+        search_product(search_query, search_markets, market_options)
+
+
+def search_product(query, markets, market_options):
+    """Search for a product across selected markets."""
+    st.divider()
+    
+    progress = st.progress(0)
+    status = st.empty()
+    
+    results = {}
+    
+    for i, market in enumerate(markets):
+        status.text(f"🔄 Searching in {market_options[market]}...")
+        progress.progress((i + 1) / len(markets))
+        
+        # For now, we'll use the bestsellers API and filter by name
+        # A proper implementation would use Amazon's search API
+        try:
+            # Search in Home & Kitchen category as proxy
+            url = CATEGORY_URLS.get('home-garden', {}).get(market)
+            if url:
+                products = scrape_bestsellers(url, max_results=50, subcategories=1)
+                
+                # Filter products that match query
+                matching = [
+                    p for p in products 
+                    if query.lower() in p.get('name', '').lower()
+                ]
+                results[market] = {
+                    'products': matching[:10],
+                    'total_found': len(matching)
+                }
+        except Exception as e:
+            results[market] = {'products': [], 'error': str(e)}
+    
+    progress.progress(100)
+    status.text("✅ Search complete!")
+    
+    # Display results
+    st.subheader(f"📊 Results for '{query}'")
+    
+    if not any(r.get('products') for r in results.values()):
+        st.warning("No products found matching your search. Try different keywords or categories.")
+        st.info("💡 Tip: Product Search currently searches within bestseller lists. For broader searches, try more generic terms.")
+        return
+    
+    # Show results by market
+    for market, data in results.items():
+        products = data.get('products', [])
+        
+        with st.expander(f"{market_options[market]} - {len(products)} found", expanded=len(products) > 0):
+            if products:
+                for p in products:
+                    col1, col2 = st.columns([4, 1])
+                    with col1:
+                        st.write(f"**{p.get('name', 'Unknown')[:80]}...**")
+                        st.caption(f"⭐ {p.get('stars', 'N/A')} | 💬 {p.get('reviewsCount', 0):,} reviews")
+                    with col2:
+                        price = p.get('price', {})
+                        st.write(f"{price.get('currency', '')}{price.get('value', 'N/A')}")
+                        if p.get('url'):
+                            st.link_button("View", p['url'], use_container_width=True)
+            elif data.get('error'):
+                st.error(f"Error: {data['error']}")
+            else:
+                st.info("No matching products found")
 
 
 def run_analysis(source_market, target_market, categories, max_results, min_reviews, market_options, subcategories=0):
@@ -246,7 +342,7 @@ def run_analysis(source_market, target_market, categories, max_results, min_revi
         status_text.text("✅ Analysis complete!")
         
         # Display results
-        display_results(opportunities, source_market, target_market, market_options)
+        display_results(opportunities, source_market, target_market, market_options, key_prefix="new_")
         
         return opportunities  # Return for caching
         
@@ -255,8 +351,8 @@ def run_analysis(source_market, target_market, categories, max_results, min_revi
         return None
 
 
-def display_results(opportunities, source_market, target_market, market_options):
-    """Display analysis results."""
+def display_results(opportunities, source_market, target_market, market_options, key_prefix=""):
+    """Display analysis results with unique key prefix to avoid duplicate element IDs."""
     
     total_opps = sum(len(opps) for opps in opportunities.values())
     
@@ -293,7 +389,7 @@ def display_results(opportunities, source_market, target_market, market_options)
         product_name = row.get('Product Name', 'Unknown')[:60]
         product_url = row.get('URL', '')
         
-        with st.expander(f"**[{row['Score']:.0f}]** {product_name}...", expanded=(idx == 0)):
+        with st.expander(f"**[{row['Score']:.0f}]** {product_name}...", expanded=(idx == 0), key=f"{key_prefix}exp_{idx}"):
             col1, col2, col3 = st.columns(3)
             with col1:
                 st.metric("Reviews", f"{row['Reviews']:,}")
@@ -306,7 +402,7 @@ def display_results(opportunities, source_market, target_market, market_options)
             
             # Add clickable link button
             if product_url:
-                st.link_button("🔗 View on Amazon", product_url)
+                st.link_button("🔗 View on Amazon", product_url, key=f"{key_prefix}link_{idx}")
     
     # Full table with clickable links
     st.subheader("📋 All Results")
