@@ -35,154 +35,166 @@ st.set_page_config(
 # Custom CSS
 st.markdown("""
 <style>
-    /* Main Layout & Background */
-    .stApp {
-        background: radial-gradient(circle at 10% 20%, rgb(18, 28, 45) 0%, rgb(11, 15, 25) 90%);
-        color: #E6EAF1;
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap');
+
+    /* Global Font & Body */
+    html, body, [class*="css"] {
+        font-family: 'Montserrat', sans-serif !important;
     }
     
-    /* Headers & Text */
+    /* Main Layout - Deep Elegant Black */
+    .stApp {
+        background-color: #0A0A0A;
+        color: #E0E0E0;
+    }
+    
+    /* Sidebar - Slightly lighter black */
+    section[data-testid="stSidebar"] {
+        background-color: #111111;
+        border-right: 1px solid #333;
+    }
+    
+    /* Headings - Gold Gradient */
     h1, h2, h3 {
-        font-family: 'Inter', sans-serif;
+        font-family: 'Montserrat', sans-serif;
         font-weight: 700 !important;
-        background: linear-gradient(90deg, #4CAF50, #00C853);
+        background: linear-gradient(45deg, #D4AF37, #F2D06B, #D4AF37);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
+        letter-spacing: -0.5px;
         padding-bottom: 0.5rem;
     }
     
+    /* Paragraphs */
     p, .stMarkdown {
-        font-family: 'Inter', sans-serif;
-        font-size: 1.05rem;
-        color: #B0B8C8;
+        color: #CCCCCC;
+        font-weight: 300;
+        line-height: 1.6;
     }
 
-    /* Sidebar Styling */
-    section[data-testid="stSidebar"] {
-        background-color: rgb(15, 20, 30);
-        border-right: 1px solid rgba(76, 175, 80, 0.1);
-    }
-    
-    /* Buttons */
+    /* Buttons - Premium Gold */
     .stButton button {
-        background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
-        color: white;
+        background: linear-gradient(135deg, #C5A028 0%, #E5C558 100%);
+        color: #000000;
         border: none;
-        border-radius: 12px;
-        padding: 0.75rem 1.5rem;
+        border-radius: 4px;
+        padding: 0.75rem 2rem;
         font-weight: 600;
+        letter-spacing: 0.5px;
         transition: all 0.3s ease;
-        box-shadow: 0 4px 14px 0 rgba(76, 175, 80, 0.39);
+        text-transform: uppercase;
+        font-size: 0.9rem;
     }
     .stButton button:hover {
         transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(76, 175, 80, 0.23);
-        background: linear-gradient(135deg, #66BB6A 0%, #43A047 100%);
+        box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+        background: linear-gradient(135deg, #D4AF37 0%, #F2D06B 100%);
+    }
+    .stButton button:active {
+        transform: translateY(0);
     }
     .stButton button:disabled {
-        background: #2d3748;
-        color: #718096;
+        background: #333;
+        color: #666;
     }
 
-    /* Cards / Expanders */
+    /* Inputs & Selects - Minimalist */
+    .stTextInput input, .stSelectbox div[data-baseweb="select"] {
+        background-color: #1A1A1A;
+        color: #FFF;
+        border: 1px solid #333;
+        border-radius: 4px;
+    }
+    .stTextInput input:focus, .stSelectbox div[data-baseweb="select"]:focus-within {
+        border-color: #D4AF37;
+        box-shadow: 0 0 0 1px #D4AF37;
+    }
+    
+    /* Checkboxes - Gold Accent */
+    .stCheckbox label span[role="checkbox"][aria-checked="true"] {
+        background-color: #D4AF37 !important;
+        border-color: #D4AF37 !important;
+    }
+
+    /* Cards / Expanders - Sleek Borders */
     .streamlit-expanderHeader {
-        background-color: rgba(255, 255, 255, 0.03);
-        border-radius: 10px;
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        color: #E2E8F0;
+        background-color: #111;
+        border: 1px solid #333;
+        border-radius: 4px;
+        color: #D4AF37;
         font-weight: 500;
     }
     .streamlit-expanderContent {
-        background-color: rgba(0, 0, 0, 0.2);
-        border-radius: 0 0 10px 10px;
-        border: 1px solid rgba(255, 255, 255, 0.05);
+        background-color: #0F0F0F;
+        border: 1px solid #333;
         border-top: none;
-        padding: 1rem;
+        border-radius: 0 0 4px 4px;
+        color: #DDD;
     }
 
-    /* Metrics styling */
+    /* Metrics - Luxury Cards */
     div[data-testid="stMetric"] {
-        background-color: rgba(255, 255, 255, 0.03);
+        background-color: #111;
+        border: 1px solid #222;
         padding: 1rem;
-        border-radius: 12px;
-        border: 1px solid rgba(76, 175, 80, 0.1);
-        text-align: center;
-        transition: 0.3s;
-    }
-    div[data-testid="stMetric"]:hover {
-        background-color: rgba(255, 255, 255, 0.06);
-        border-color: rgba(76, 175, 80, 0.3);
+        border-radius: 4px;
+        border-left: 3px solid #D4AF37;
     }
     div[data-testid="stMetricLabel"] {
-        color: #94A3B8;
-        font-size: 0.9rem;
+        color: #888;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 1px;
     }
     div[data-testid="stMetricValue"] {
-        color: #FFFFFF;
-        font-weight: 700;
-        font-size: 1.5rem;
+        color: #FFF;
+        font-weight: 600;
+    }
+
+    /* Sliders - Gold Track */
+    div[data-baseweb="slider"] div[role="slider"] {
+        background-color: #D4AF37 !important;
+    }
+    div[data-baseweb="slider"] div[data-testid="stTickBar"] div {
+        background-color: #444;
+    }
+    div[data-baseweb="slider"] div {
+        background-color: #D4AF37;
     }
 
     /* Progress Bar */
     .stProgress > div > div > div > div {
-        background: linear-gradient(90deg, #4CAF50, #00E676);
-        border-radius: 10px;
+        background: linear-gradient(90deg, #C5A028, #F2D06B);
+        border-radius: 4px;
     }
 
-    /* Checkboxes & Inputs */
-    .stCheckbox label {
-        color: #E2E8F0;
-    }
-    .stTextInput input {
-        background-color: rgba(255, 255, 255, 0.05);
-        color: #FFFFFF;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 8px;
-    }
-    .stTextInput input:focus {
-        border-color: #4CAF50;
-        box-shadow: 0 0 0 1px #4CAF50;
-    }
-
-    /* DataFrame styling */
-    [data-testid="stDataFrame"] {
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        border-radius: 10px;
-        overflow: hidden;
-    }
-    
-    /* Dividers */
-    hr {
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    
-    /* Custom alerts */
-    .stAlert {
-        border-radius: 10px;
-        background-color: rgba(25, 30, 45, 0.9);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-    }
-    
-    /* Tab styling */
+    /* Tabs */
     .stTabs [data-baseweb="tab-list"] {
-        gap: 8px;
-        background-color: transparent;
+        gap: 20px;
+        border-bottom: 1px solid #333;
     }
     .stTabs [data-baseweb="tab"] {
-        height: 50px;
-        white-space: pre-wrap;
-        background-color: rgba(255, 255, 255, 0.03);
-        border-radius: 8px 8px 0 0;
-        gap: 1px;
-        padding-top: 10px;
-        padding-bottom: 10px;
-        color: #94A3B8;
+        height: 60px;
+        background-color: transparent;
+        color: #666;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 1px;
         border: none;
     }
     .stTabs [aria-selected="true"] {
-        background-color: rgba(76, 175, 80, 0.1) !important;
-        color: #4CAF50 !important;
-        border-bottom: 2px solid #4CAF50 !important;
+        color: #D4AF37 !important;
+        border-bottom: 2px solid #D4AF37 !important;
+    }
+    
+    /* DataFrame Styling */
+    [data-testid="stDataFrame"] {
+        border: 1px solid #333;
+    }
+    
+    iframe {
+        border: 1px solid #333;
     }
 </style>
 """, unsafe_allow_html=True)
