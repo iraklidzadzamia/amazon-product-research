@@ -135,24 +135,30 @@ st.markdown("""
         text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
     }
 
-    /* Sliders - Killua's Lightning Blue (Fixed Visibility) */
+    /* Sliders - Killua's Lightning Blue (Fixed Visibility v2) */
     div[data-baseweb="slider"] {
-        padding-top: 1.5rem !important; /* Make space for values */
+        padding-top: 2rem !important; /* More space for values */
     }
     div[data-baseweb="slider"] div[role="slider"] {
         background-color: #00b8ff !important;
-        box-shadow: 0 0 10px rgba(0, 184, 255, 0.5); /* Reduced glow */
+        box-shadow: 0 0 10px rgba(0, 184, 255, 0.4);
     }
     div[data-baseweb="slider"] div[data-testid="stTickBar"] div {
         background-color: #444;
     }
     div[data-baseweb="slider"] div {
-        background-color: rgba(0, 184, 255, 0.3); /* Track color */
+        background-color: rgba(0, 184, 255, 0.2); /* Very subtle track */
     }
-    /* Value labels */
+    /* Force Value Labels to White & Visible */
     div[data-testid="stMarkdownContainer"] p {
-        color: #e0e0e0 !important;
-        font-weight: 600;
+        color: #e0e0e0; /* Default text color */
+    }
+    /* Target the specific slider value labels if possible, or generally boost contrast */
+    .stSlider [data-testid="stMarkdownContainer"] p {
+        color: #ffffff !important;
+        font-weight: 800 !important;
+        font-size: 1.1rem !important;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.8);
     }
 
     /* Progress Bar - Gon's Aura */
