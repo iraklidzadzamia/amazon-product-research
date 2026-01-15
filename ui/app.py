@@ -562,7 +562,7 @@ def display_results(opportunities, source_market, target_market, market_options,
         product_name = row.get('Product Name', 'Unknown')[:60]
         product_url = row.get('URL', '')
         
-        with st.expander(f"**[{row['Score']:.0f}]** {product_name}...", expanded=(idx == 0), key=f"{key_prefix}exp_{idx}"):
+        with st.expander(f"**[{row['Score']:.0f}]** {product_name}...", expanded=(idx == 0)):
             col1, col2, col3 = st.columns(3)
             with col1:
                 st.metric("Reviews", f"{row['Reviews']:,}")
