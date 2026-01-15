@@ -24,6 +24,7 @@ from product_comparator import (
     compare_markets,
     opportunities_to_csv_rows
 )
+from ai_analyzer import analyze_opportunities
 
 # Page config
 st.set_page_config(
@@ -229,6 +230,10 @@ def main():
         st.session_state.analysis_results = None
     if 'analysis_params' not in st.session_state:
         st.session_state.analysis_params = None
+    if 'ai_analysis' not in st.session_state:
+        st.session_state.ai_analysis = None
+    if 'analysis_params' not in st.session_state:
+        st.session_state.analysis_params = None
     
     # Sidebar settings
     with st.sidebar:
@@ -368,10 +373,43 @@ def main():
                 key_prefix="cached_"
             )
             
+            # AI Analysis Section
+            st.divider()
+            st.subheader("🤖 AI Анализ продуктов")
+            st.markdown("Получите профессиональный анализ от AI: культурные различия, рекомендации по продажам, потенциальные риски.")
+            
+            col1, col2 = st.columns([1, 3])
+            with col1:
+                if st.button("🧠 Запустить AI анализ", type="primary", key="ai_analysis_btn"):
+                    with st.spinner("🔄 AI анализирует продукты... (30-60 сек)"):
+                        try:
+                            # Get country names from market codes
+                            source_country = MARKETS[params['source_code']]['name']
+                            target_country = MARKETS[params['target_code']]['name']
+                            
+                            ai_result = analyze_opportunities(
+                                opportunities=st.session_state.analysis_results,
+                                source_market=params['source_code'].upper(),
+                                target_market=params['target_code'].upper(),
+                                source_country=source_country,
+                                target_country=target_country
+                            )
+                            st.session_state.ai_analysis = ai_result
+                        except Exception as e:
+                            st.error(f"❌ Ошибка AI анализа: {e}")
+            
+            # Display AI analysis if available
+            if st.session_state.ai_analysis:
+                st.markdown("---")
+                st.markdown(st.session_state.ai_analysis)
+            
+            st.divider()
+            
             # Clear cache button
             if st.button("🗑️ Clear cached results", key="clear_cache_btn"):
                 st.session_state.analysis_results = None
                 st.session_state.analysis_params = None
+                st.session_state.ai_analysis = None
                 st.rerun()
     
     with tab2:
