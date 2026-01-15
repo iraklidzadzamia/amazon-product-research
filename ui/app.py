@@ -605,7 +605,8 @@ def display_results(opportunities, source_market, target_market, market_options,
         label="📥 Download CSV",
         data=csv,
         file_name=f"opportunities_{source_market}_to_{target_market}_{datetime.now().strftime('%Y%m%d')}.csv",
-        mime="text/csv"
+        mime="text/csv",
+        key=f"{key_prefix}download_csv"
     )
 
 
