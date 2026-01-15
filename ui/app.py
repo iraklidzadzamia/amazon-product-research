@@ -575,7 +575,7 @@ def display_results(opportunities, source_market, target_market, market_options,
             
             # Add clickable link button
             if product_url:
-                st.link_button("🔗 View on Amazon", product_url, key=f"{key_prefix}link_{idx}")
+                st.link_button("🔗 View on Amazon", product_url)
     
     # Full table with clickable links
     st.subheader("📋 All Results")
