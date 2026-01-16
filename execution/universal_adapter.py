@@ -15,7 +15,7 @@ class UniversalAdapter:
 
     def get_category_url(self, category_id: str) -> str:
         """Map internal category ID to AliExpress Category URL (sorted by orders)."""
-        # Using actual category pages from aliexpress.ru with SortType for best sellers
+        # Updated 2026-01-16 09:53 - Using actual category pages from aliexpress.ru
         # Base URLs without session tokens - these are stable
         ALIEXPRESS_CATEGORY_MAP = {
             "home-garden": "https://aliexpress.ru/category/6/home-garden-office?SortType=total_tranpro_desc",
