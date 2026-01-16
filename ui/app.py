@@ -336,9 +336,28 @@ def main():
             with univ_col2:
                  agent_prompt = st.text_input("Search Prompt", value="Find top 10 trending kitchen gadgets", help="What should the agent look for?")
                  
-            # Note: Category selection is less relevant for Universal as the Prompt drives it, 
-            # but we pass a dummy category to keep the logic consistent or hide it.
-            # We'll just ignore categories for Universal in the run_analysis wrapper.
+            # Re-enable Category Selection for the TARGET market
+            st.subheader("🎯 Target Amazon Category")
+            st.info("Select the Amazon category to compare your AliExpress findings against.")
+            
+            category_names = {
+                "home-garden": "🏠 Home & Kitchen",
+                "pet-supplies": "🐾 Pet Supplies",
+                "office-products": "📎 Office Products",
+                "sports-outdoors": "⚽ Sports & Outdoors",
+                "toys-games": "🎮 Toys & Games"
+            }
+            
+            cols = st.columns(3)
+            selected_categories = []
+            
+            for i, (cat_id, cat_name) in enumerate(category_names.items()):
+                with cols[i % 3]:
+                    if st.checkbox(cat_name, value=(i == 0), key=f"univ_cat_{cat_id}"):
+                        selected_categories.append(cat_id)
+
+            if not selected_categories:
+                st.warning("Please select a target Amazon category for comparison.")
             
         else:
             st.markdown(f"Finding products popular in **{market_options.get(source_market, source_market)}** but not in **{market_options.get(target_market, target_market)}**")
@@ -386,8 +405,8 @@ def main():
                         "url": target_site_url,
                         "prompt": agent_prompt
                     }
-                    selected_categories = ["universal_search"] # Dummy category for loop
-
+                    # Keep selected_categories as is (user selected target categories)
+ 
                 result = run_analysis(
                     source_market=source_market,
                     target_market=target_market,
@@ -581,9 +600,13 @@ def run_analysis(source_market, target_market, categories, max_results, min_revi
                 prompt=universal_params['prompt']
             )
             
-            # Since Universal returns a flat list (mocking "one category"),
-            # we assign it to our dummy category
-            source_data = {"universal_search": products}
+            # Since Universal returns a flat list, we need to map it to the requested categories
+            # Strategy: Assign the SAME AliExpress product list to ALL selected target categories
+            # This allows comparing the scraped gadgets against "Home" AND "Office" if the user selected both.
+            source_data = {}
+            for cat in categories:
+                source_data[cat] = products
+                
             progress_bar.progress(30)
             
         else:
