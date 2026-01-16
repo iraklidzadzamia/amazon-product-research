@@ -104,7 +104,9 @@ class UniversalAdapter:
                 idx = markdown_content.find(product_url)
                 context = markdown_content[max(0, idx-200):idx+100]
                 price_match = re.search(price_pattern, context)
-                price = float(price_match.group(1).replace(' ', '')) if price_match else 0
+                # Russian prices use non-breaking space (\xa0) as thousand separator
+                price_str = price_match.group(1).replace(' ', '').replace('\xa0', '') if price_match else "0"
+                price = float(price_str) if price_str else 0
                 
                 # Convert RUB to USD (approximate)
                 price_usd = round(price / 90, 2)  # 1 USD ≈ 90 RUB
