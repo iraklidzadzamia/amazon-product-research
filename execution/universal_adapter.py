@@ -58,11 +58,12 @@ class UniversalAdapter:
         import re
         import streamlit as st
         
-        st.info(f"🤖 Calling Firecrawl scrape_url on: {url}")
+        st.info(f"🤖 Calling Firecrawl scrape on: {url}")
 
         try:
             # Use scrape with markdown format - most reliable for parsing
-            data = self.app.scrape_url(
+            # Note: Method is .scrape() in newer SDK versions, not .scrape_url()
+            data = self.app.scrape(
                 url,
                 params={
                     "formats": ["markdown"],
