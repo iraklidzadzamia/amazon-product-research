@@ -97,31 +97,42 @@ class UniversalAdapter:
                                 "review_count": {"type": "integer"},
                                 "rating": {"type": "number"}
                             },
-                            "required": ["name", "price", "product_url"]
+                            "required": ["name", "price"]
                         }
                     }
                 }
             }
 
-            data = self.app.extract(
-                [url],
-                {
-                    "prompt": full_prompt,
-                    "schema": schema,
-                    #"enableWebSearch": True # Optional, helpful if URL is generic
+            # Use scrape with extract format - handles JS rendering better than extract()
+            data = self.app.scrape_url(
+                url,
+                params={
+                    "formats": ["extract"],
+                    "extract": {
+                        "prompt": full_prompt,
+                        "schema": schema
+                    },
+                    "waitFor": 3000,  # Wait 3 sec for JS to load
                 }
             )
             
-            # Firecrawl returns a wrapped response
-            # Structure usually is {'data': {'products': [...]}, ...}
+            # Firecrawl scrape_url with extract returns structure like:
+            # {'extract': {'products': [...]}, 'metadata': {...}}
             
-            if isinstance(data, dict) and 'data' in data:
-                 # Extract the inner list
-                 products_raw = data['data'].get('products', [])
+            print(f"DEBUG Firecrawl response keys: {data.keys() if isinstance(data, dict) else type(data)}")
+            
+            if isinstance(data, dict) and 'extract' in data:
+                # scrape_url with extract format
+                extract_data = data['extract']
+                products_raw = extract_data.get('products', []) if isinstance(extract_data, dict) else []
+            elif isinstance(data, dict) and 'data' in data:
+                # Legacy extract() response
+                products_raw = data['data'].get('products', [])
             elif isinstance(data, dict) and 'products' in data:
-                 products_raw = data['products']
+                products_raw = data['products']
             else:
-                 products_raw = []
+                print(f"DEBUG: Unexpected response structure: {data}")
+                products_raw = []
 
             # Normalize to our standard format
             normalized_products = []
