@@ -14,17 +14,18 @@ class UniversalAdapter:
         self.app = FirecrawlApp(api_key=self.api_key)
 
     def get_category_url(self, category_id: str) -> str:
-        """Map internal category ID to AliExpress Search URL (more reliable than category pages)."""
-        # Using search URLs instead of category URLs - they're more reliable and always work
-        ALIEXPRESS_SEARCH_MAP = {
-            "home-garden": "https://www.aliexpress.com/w/wholesale-home-garden.html?sortType=total_tranpro_desc",
-            "pet-supplies": "https://www.aliexpress.com/w/wholesale-pet-supplies.html?sortType=total_tranpro_desc",
-            "office-products": "https://www.aliexpress.com/w/wholesale-office-supplies.html?sortType=total_tranpro_desc",
-            "sports-outdoors": "https://www.aliexpress.com/w/wholesale-sports-outdoors.html?sortType=total_tranpro_desc",
-            "toys-games": "https://www.aliexpress.com/w/wholesale-toys.html?sortType=total_tranpro_desc"
+        """Map internal category ID to AliExpress Category URL (sorted by orders)."""
+        # Using actual category pages from aliexpress.ru with SortType for best sellers
+        # Base URLs without session tokens - these are stable
+        ALIEXPRESS_CATEGORY_MAP = {
+            "home-garden": "https://aliexpress.ru/category/6/home-garden-office?SortType=total_tranpro_desc",
+            "pet-supplies": "https://aliexpress.ru/category/858/pet-products?SortType=total_tranpro_desc",
+            "office-products": "https://aliexpress.ru/category/16029/home-improvement-tools?SortType=total_tranpro_desc",  # Closest match
+            "sports-outdoors": "https://aliexpress.ru/category/7/sports-entertainment?SortType=total_tranpro_desc",
+            "toys-games": "https://aliexpress.ru/category/9/toys-hobbies?SortType=total_tranpro_desc"
         }
-        # sortType=total_tranpro_desc = Sort by Orders (best sellers first)
-        return ALIEXPRESS_SEARCH_MAP.get(category_id, "https://www.aliexpress.com/w/wholesale-bestsellers.html?sortType=total_tranpro_desc")
+        # SortType=total_tranpro_desc = Sort by Orders (best sellers first)
+        return ALIEXPRESS_CATEGORY_MAP.get(category_id, "https://aliexpress.ru/category/6/home-garden-office?SortType=total_tranpro_desc")
 
 
     def scrape_products(self, url: str, prompt: str, limit: int = 20) -> List[Dict]:
