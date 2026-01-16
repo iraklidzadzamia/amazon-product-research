@@ -14,15 +14,17 @@ class UniversalAdapter:
         self.app = FirecrawlApp(api_key=self.api_key)
 
     def get_category_url(self, category_id: str) -> str:
-        """Map internal category ID to AliExpress Category URL."""
-        ALIEXPRESS_CATEGORY_MAP = {
-            "home-garden": "https://www.aliexpress.com/category/15/home-garden.html",  # Home & Garden
-            "pet-supplies": "https://www.aliexpress.com/category/200003507/pet-products.html", # Pet Products
-            "office-products": "https://www.aliexpress.com/category/21/education-office-supplies.html", # Office & School
-            "sports-outdoors": "https://www.aliexpress.com/category/18/sports-entertainment.html", # Sports
-            "toys-games": "https://www.aliexpress.com/category/26/toys-hobbies.html" # Toys
+        """Map internal category ID to AliExpress Search URL (more reliable than category pages)."""
+        # Using search URLs instead of category URLs - they're more reliable and always work
+        ALIEXPRESS_SEARCH_MAP = {
+            "home-garden": "https://www.aliexpress.com/w/wholesale-home-garden.html?sortType=total_tranpro_desc",
+            "pet-supplies": "https://www.aliexpress.com/w/wholesale-pet-supplies.html?sortType=total_tranpro_desc",
+            "office-products": "https://www.aliexpress.com/w/wholesale-office-supplies.html?sortType=total_tranpro_desc",
+            "sports-outdoors": "https://www.aliexpress.com/w/wholesale-sports-outdoors.html?sortType=total_tranpro_desc",
+            "toys-games": "https://www.aliexpress.com/w/wholesale-toys.html?sortType=total_tranpro_desc"
         }
-        return ALIEXPRESS_CATEGORY_MAP.get(category_id, "https://www.aliexpress.com")
+        # sortType=total_tranpro_desc = Sort by Orders (best sellers first)
+        return ALIEXPRESS_SEARCH_MAP.get(category_id, "https://www.aliexpress.com/w/wholesale-bestsellers.html?sortType=total_tranpro_desc")
 
 
     def scrape_products(self, url: str, prompt: str, limit: int = 20) -> List[Dict]:
