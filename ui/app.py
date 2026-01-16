@@ -279,11 +279,12 @@ def main():
         st.subheader("📊 Parameters")
         
         max_results = st.slider(
-            "Max products per category",
+            "Scan Top N Products (List Only)",
             min_value=5,
-            max_value=50,
-            value=20,
-            step=5
+            max_value=100,
+            value=10,
+            step=5,
+            help="How many items to scan from the bestseller list. Higher = more data but slower."
         )
         
         min_reviews = st.slider(
