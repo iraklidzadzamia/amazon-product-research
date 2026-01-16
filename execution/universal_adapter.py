@@ -126,7 +126,9 @@ class UniversalAdapter:
             return normalized_products
 
         except Exception as e:
-            print(f"❌ Firecrawl Error: {e}")
+            import traceback
+            st.error(f"❌ Firecrawl Exception: {type(e).__name__}: {e}")
+            st.code(traceback.format_exc(), language="python")
             return []
 
 if __name__ == "__main__":
