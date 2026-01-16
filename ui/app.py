@@ -621,11 +621,20 @@ def run_analysis(source_market, target_market, categories, max_results, min_revi
                      # Use mapping
                      target_url = adapter.get_category_url(category)
                  
-                 products = adapter.scrape_products(
-                    url=target_url,
-                    prompt=universal_params['prompt'],
-                    limit=max_results
-                 )
+                 # DEBUG: Show URL being called
+                 st.info(f"🔗 DEBUG: Calling Firecrawl with URL: {target_url}")
+                 
+                 try:
+                     products = adapter.scrape_products(
+                        url=target_url,
+                        prompt=universal_params['prompt'],
+                        limit=max_results
+                     )
+                     st.success(f"✅ Firecrawl returned {len(products)} products for {category}")
+                 except Exception as fc_error:
+                     st.error(f"❌ Firecrawl FAILED: {fc_error}")
+                     products = []
+                 
                  source_data[category] = products
                  progress_bar.progress(10 + int(30 * (i + 1) / len(categories)))
             
