@@ -594,7 +594,8 @@ def run_analysis(source_market, target_market, categories, max_results, min_revi
     
     try:
         # Step 1: Scrape source market
-        status_text.text(f"🔄 Scraping {market_options[source_market]}...")
+        market_name = market_options.get(source_market, "Universal Source")
+        status_text.text(f"🔄 Scraping {market_name}...")
         progress_bar.progress(10)
         
         if source_market == 'universal' and universal_params:
