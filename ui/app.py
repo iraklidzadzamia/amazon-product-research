@@ -608,7 +608,17 @@ def run_analysis(source_market, target_market, categories, max_results, min_revi
             # Universal Source Flow
             # Lazy import to avoid circular dependency
             from universal_adapter import UniversalAdapter
-            adapter = UniversalAdapter()
+            
+            # DEBUG: Show adapter initialization
+            st.info("🔧 DEBUG: Initializing UniversalAdapter...")
+            try:
+                adapter = UniversalAdapter()
+                st.success("✅ UniversalAdapter initialized successfully")
+            except Exception as init_error:
+                import traceback
+                st.error(f"❌ UniversalAdapter INIT FAILED: {init_error}")
+                st.code(traceback.format_exc())
+                raise init_error
             
             source_data = {}
             
@@ -627,14 +637,21 @@ def run_analysis(source_market, target_market, categories, max_results, min_revi
                  st.info(f"🔗 DEBUG: Calling Firecrawl with URL: {target_url}")
                  
                  try:
+                     st.info("🔄 DEBUG: Starting scrape_products call...")
                      products = adapter.scrape_products(
                         url=target_url,
                         prompt=universal_params['prompt'],
                         limit=max_results
                      )
                      st.success(f"✅ Firecrawl returned {len(products)} products for {category}")
+                     
+                     # Extra debug: show first product if any
+                     if products:
+                         st.info(f"🔍 First product: {products[0].get('name', 'N/A')[:50]}")
                  except Exception as fc_error:
+                     import traceback
                      st.error(f"❌ Firecrawl FAILED: {fc_error}")
+                     st.code(traceback.format_exc())
                      products = []
                  
                  source_data[category] = products
