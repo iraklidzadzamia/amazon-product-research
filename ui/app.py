@@ -247,10 +247,21 @@ def main():
             for code, info in MARKETS.items()
         }
         
+            format_func=lambda x: market_options.get(x, "🌐 Custom Site (AI Agent)"),
+            index=1  # Default: Japan
+        )
+        
+        # Append Universal option if not in dict (it's a hack to show it in selectbox)
+        # Actually easier to just add it to options dict temporarily or handle in code
+        # Let's handle it by adding a literal option
+        
+        market_options_with_univ = market_options.copy()
+        market_options_with_univ['universal'] = "🌐 Custom Site (AI Agent)"
+        
         source_market = st.selectbox(
             "Source Market (find products here)",
-            options=list(market_options.keys()),
-            format_func=lambda x: market_options[x],
+            options=list(market_options_with_univ.keys()),
+            format_func=lambda x: market_options_with_univ[x],
             index=1  # Default: Japan
         )
         
@@ -304,43 +315,81 @@ def main():
                         st.error("❌ Connection failed")
                 except Exception as e:
                     st.error(f"❌ Error: {e}")
+                    
+        # Debug / Universal Source Info
+        if source_market == 'universal':
+            st.info("ℹ️ You are using the Universal Agent (AliExpress/Other). Product discovery will be slower (AI-driven).")
     
     # Main content - Tabs
     tab1, tab2 = st.tabs(["📊 Market Analysis", "🔍 Product Search"])
     
     with tab1:
         st.header("📊 Market Comparison")
-        st.markdown(f"Finding products popular in **{market_options[source_market]}** but not in **{market_options[target_market]}**")
         
-        # Category selection
-        st.subheader("📦 Select Categories")
-        
-        category_names = {
-            "home-garden": "🏠 Home & Kitchen",
-            "pet-supplies": "🐾 Pet Supplies",
-            "office-products": "📎 Office Products",
-            "sports-outdoors": "⚽ Sports & Outdoors",
-            "toys-games": "🎮 Toys & Games"
-        }
-        
-        cols = st.columns(3)
-        selected_categories = []
-        
-        for i, (cat_id, cat_name) in enumerate(category_names.items()):
-            with cols[i % 3]:
-                if st.checkbox(cat_name, value=(i == 0), key=f"cat_{cat_id}"):
-                    selected_categories.append(cat_id)
-        
-        if not selected_categories:
-            st.warning("Please select at least one category")
+        # Dynamic Header based on Source
+        if source_market == 'universal':
+            st.markdown(f"Finding bestsellers on **Universal Source** to compare with **{market_options.get(target_market, target_market)}**")
+            
+            # Universal Source Inputs
+            st.subheader("🌐 Universal Source Configuration")
+            univ_col1, univ_col2 = st.columns([2, 1])
+            with univ_col1:
+                target_site_url = st.text_input("Target URL", value="https://www.aliexpress.com", help="The starting URL for the agent (e.g. AliExpress category page)")
+            with univ_col2:
+                 agent_prompt = st.text_input("Search Prompt", value="Find top 10 trending kitchen gadgets", help="What should the agent look for?")
+                 
+            # Note: Category selection is less relevant for Universal as the Prompt drives it, 
+            # but we pass a dummy category to keep the logic consistent or hide it.
+            # We'll just ignore categories for Universal in the run_analysis wrapper.
+            
+        else:
+            st.markdown(f"Finding products popular in **{market_options.get(source_market, source_market)}** but not in **{market_options.get(target_market, target_market)}**")
+            
+            # Category selection (Only for Standard Markets)
+            st.subheader("📦 Select Categories")
+            
+            category_names = {
+                "home-garden": "🏠 Home & Kitchen",
+                "pet-supplies": "🐾 Pet Supplies",
+                "office-products": "📎 Office Products",
+                "sports-outdoors": "⚽ Sports & Outdoors",
+                "toys-games": "🎮 Toys & Games"
+            }
+            
+            cols = st.columns(3)
+            selected_categories = []
+            
+            for i, (cat_id, cat_name) in enumerate(category_names.items()):
+                with cols[i % 3]:
+                    if st.checkbox(cat_name, value=(i == 0), key=f"cat_{cat_id}"):
+                        selected_categories.append(cat_id)
+            
+            if not selected_categories:
+                st.warning("Please select at least one category")
         
         # Run button
         st.divider()
         
-        if st.button("🚀 Run Analysis", type="primary", disabled=len(selected_categories) == 0):
+        # Logic for Universal vs Standard Validation
+        is_ready = False
+        if source_market == 'universal':
+             is_ready = bool(target_site_url and agent_prompt)
+        else:
+             is_ready = len(selected_categories) > 0
+
+        if st.button("🚀 Run Analysis", type="primary", disabled=not is_ready):
             if source_market == target_market:
                 st.error("Please select different source and target markets")
             else:
+                # Pass universal params if applicable
+                universal_params = {}
+                if source_market == 'universal':
+                    universal_params = {
+                        "url": target_site_url,
+                        "prompt": agent_prompt
+                    }
+                    selected_categories = ["universal_search"] # Dummy category for loop
+
                 result = run_analysis(
                     source_market=source_market,
                     target_market=target_market,
@@ -348,7 +397,8 @@ def main():
                     max_results=max_results,
                     min_reviews=min_reviews,
                     market_options=market_options,
-                    subcategories=1 if include_subcategories else 0
+                    subcategories=1 if include_subcategories else 0,
+                    universal_params=universal_params
                 )
                 # Cache results in session
                 if result:
@@ -509,7 +559,7 @@ def search_product(query, markets, market_options):
                 st.info("No matching products found")
 
 
-def run_analysis(source_market, target_market, categories, max_results, min_reviews, market_options, subcategories=0):
+def run_analysis(source_market, target_market, categories, max_results, min_reviews, market_options, subcategories=0, universal_params=None):
     """Run the market comparison analysis. Returns opportunities dict."""
     
     progress_bar = st.progress(0)
@@ -520,13 +570,33 @@ def run_analysis(source_market, target_market, categories, max_results, min_revi
         status_text.text(f"🔄 Scraping {market_options[source_market]}...")
         progress_bar.progress(10)
         
-        source_data = {}
-        for i, category in enumerate(categories):
-            status_text.text(f"🔄 Scraping {category} from {market_options[source_market]}...")
-            url = CATEGORY_URLS[category][source_market]
-            products = scrape_bestsellers(url, max_results=max_results, subcategories=subcategories)
-            source_data[category] = products
-            progress_bar.progress(10 + int(30 * (i + 1) / len(categories)))
+        if source_market == 'universal' and universal_params:
+            # Universal Source Flow
+            status_text.text(f"🤖 Agent Scraping {universal_params['url']}...")
+            
+            # Lazy import to avoid circular dependency
+            from universal_adapter import UniversalAdapter
+            adapter = UniversalAdapter()
+            
+            products = adapter.scrape_products(
+                url=universal_params['url'],
+                prompt=universal_params['prompt']
+            )
+            
+            # Since Universal returns a flat list (mocking "one category"),
+            # we assign it to our dummy category
+            source_data = {"universal_search": products}
+            progress_bar.progress(30)
+            
+        else:
+            # Standard Amazon Flow
+            source_data = {}
+            for i, category in enumerate(categories):
+                status_text.text(f"🔄 Scraping {category} from {market_options[source_market]}...")
+                url = CATEGORY_URLS[category][source_market]
+                products = scrape_bestsellers(url, max_results=max_results, subcategories=subcategories)
+                source_data[category] = products
+                progress_bar.progress(10 + int(30 * (i + 1) / len(categories)))
         
         # Step 2: Scrape target market
         status_text.text(f"🔄 Scraping {market_options[target_market]}...")
@@ -543,10 +613,14 @@ def run_analysis(source_market, target_market, categories, max_results, min_revi
         status_text.text("🔍 Analyzing opportunities...")
         progress_bar.progress(80)
         
+        # Detect if we are in universal mode
+        is_universal = True if (universal_params and 'url' in universal_params) else False
+        
         opportunities = compare_markets(
             us_data=target_data,
             jp_data=source_data,
-            min_reviews=min_reviews
+            min_reviews=min_reviews,
+            universal_mode=is_universal
         )
         
         progress_bar.progress(100)

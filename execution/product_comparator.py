@@ -112,16 +112,19 @@ def find_opportunities(
     jp_products: list[dict],
     us_products: list[dict],
     similarity_threshold: float = 0.3,
-    min_reviews: int = 1000
+    min_reviews: int = 1000,
+    is_universal_source: bool = False
 ) -> list[dict]:
     """
-    Find products that are popular in Japan but not in US.
+    Find products that are popular in Source but not in Target.
+    If is_universal_source is True, compares Source Price vs Target Best Seller Price (Arbitrage).
     
     Args:
-        jp_products: Bestsellers from Japan
-        us_products: Bestsellers from US
-        similarity_threshold: Below this = considered "not in US"
-        min_reviews: Minimum JP reviews to consider
+        jp_products: Products from Source Market
+        us_products: Products from Target Market
+        similarity_threshold: Match threshold
+        min_reviews: Minimum reviews
+        is_universal_source: If True, uses arbitrage logic
     
     Returns:
         List of opportunity products with analysis
@@ -129,35 +132,75 @@ def find_opportunities(
     opportunities = []
     
     for jp_product in jp_products:
-        # Filter by minimum reviews
+        # Filter by minimum reviews (skip for Universal as scraped items are usually top already)
         jp_reviews = jp_product.get('reviewsCount', 0) or 0
-        if jp_reviews < min_reviews:
+        if not is_universal_source and jp_reviews < min_reviews:
             continue
-        
-        # Check if similar product exists in US
-        us_match = find_similar_in_list(jp_product, us_products, similarity_threshold)
-        
-        if us_match is None:
-            # No match found - this is an opportunity!
+
+        if is_universal_source:
+            # === UNIVERSAL STRATEGY: ARBITRAGE ===
+            # Compare against the Target Market Leader (Best Seller)
+            best_seller = find_best_seller_match(us_products)
+            if not best_seller:
+                continue
+                
+            # Simple Price Arbitrage Calculation
+            # TODO: Add currency conversion in future. Assuming generic scraping is USD-normalized or aware.
+            
+            src_price_val = jp_product.get('price', {}).get('value', 0)
+            if isinstance(src_price_val, str):
+                try: src_price_val = float(src_price_val.replace(',',''))
+                except: src_price_val = 0
+                
+            target_price_val = best_seller.get('price', {}).get('value', 0)
+            if isinstance(target_price_val, str):
+                try: target_price_val = float(target_price_val.replace(',',''))
+                except: target_price_val = 0
+            
+            if src_price_val <= 0 or target_price_val <= 0:
+                continue
+                
+            margin_multiplier = target_price_val / src_price_val
+            
+            # Opportunity Score based on Margin
+            # 3x markup = 100 score. 1x markup = 0 score.
+            opp_score = min(max((margin_multiplier - 1) * 50, 0), 100)
+            
             opportunity = {
-                'jp_product': {
-                    'asin': jp_product.get('asin'),
-                    'name': jp_product.get('name'),
-                    'price': jp_product.get('price'),
-                    'stars': jp_product.get('stars'),
-                    'reviewsCount': jp_product.get('reviewsCount'),
-                    'position': jp_product.get('position'),
-                    'url': jp_product.get('url'),
-                    'thumbnailUrl': jp_product.get('thumbnailUrl'),
-                },
-                'us_match': None,
+                'jp_product': jp_product,
+                'us_match': best_seller,
                 'similarity_score': 0,
-                'opportunity_score': calculate_opportunity_score(jp_product, None),
-                'reason': 'No similar product found in US market'
+                'opportunity_score': opp_score,
+                'reason': f"Potential Arbitrage. Source: ${src_price_val} vs Market Leader: ${target_price_val} ({margin_multiplier:.1f}x Markup)"
             }
             opportunities.append(opportunity)
+            
         else:
-            # Match found but might still be opportunity if US version underperforms
+            # === STANDARD STRATEGY: MISSING PRODUCTS ===
+            # Check if similar product exists in US
+            us_match = find_similar_in_list(jp_product, us_products, similarity_threshold)
+            
+            if us_match is None:
+                # No match found - this is an opportunity!
+                opportunity = {
+                    'jp_product': {
+                        'asin': jp_product.get('asin'),
+                        'name': jp_product.get('name'),
+                        'price': jp_product.get('price'),
+                        'stars': jp_product.get('stars'),
+                        'reviewsCount': jp_product.get('reviewsCount'),
+                        'position': jp_product.get('position'),
+                        'url': jp_product.get('url'),
+                        'thumbnailUrl': jp_product.get('thumbnailUrl'),
+                    },
+                    'us_match': None,
+                    'similarity_score': 0,
+                    'opportunity_score': calculate_opportunity_score(jp_product, None),
+                    'reason': 'No similar product found in US market'
+                }
+                opportunities.append(opportunity)
+            else:
+                # Match found but might still be opportunity if US version underperforms
             us_reviews = us_match.get('reviewsCount', 0) or 0
             score = us_match.get('_similarity_score', 0)
             
@@ -245,10 +288,11 @@ def calculate_opportunity_score(jp_product: dict, us_match: Optional[dict]) -> f
 def compare_markets(
     us_data: dict[str, list[dict]],
     jp_data: dict[str, list[dict]],
-    min_reviews: int = 1000
+    min_reviews: int = 1000,
+    universal_mode: bool = False
 ) -> dict[str, list[dict]]:
     """
-    Compare all categories between US and JP markets.
+    Compare all categories between US and JP markets (or Universal vs Target).
     
     Args:
         us_data: Dict of category -> product list for US
@@ -274,7 +318,8 @@ def compare_markets(
         opportunities = find_opportunities(
             jp_products=jp_products,
             us_products=us_products,
-            min_reviews=min_reviews
+            min_reviews=min_reviews,
+            is_universal_source=universal_mode
         )
         
         all_opportunities[category] = opportunities
