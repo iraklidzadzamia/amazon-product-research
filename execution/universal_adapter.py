@@ -8,9 +8,19 @@ load_dotenv()
 
 class UniversalAdapter:
     def __init__(self):
-        self.api_key = os.getenv("FIRECRAWL_API_KEY")
+        # Try st.secrets first (Streamlit Cloud), then fallback to os.getenv (local)
+        try:
+            import streamlit as st
+            self.api_key = st.secrets.get("FIRECRAWL_API_KEY", None)
+        except:
+            self.api_key = None
+        
         if not self.api_key:
-            raise ValueError("FIRECRAWL_API_KEY not found in .env")
+            self.api_key = os.getenv("FIRECRAWL_API_KEY")
+        
+        if not self.api_key:
+            raise ValueError("FIRECRAWL_API_KEY not found in secrets or .env")
+        
         self.app = FirecrawlApp(api_key=self.api_key)
 
     def get_category_url(self, category_id: str) -> str:
