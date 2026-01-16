@@ -20,9 +20,10 @@ class UniversalAdapter:
         ALIEXPRESS_CATEGORY_MAP = {
             "home-garden": "https://aliexpress.ru/category/6/home-garden-office?SortType=total_tranpro_desc",
             "pet-supplies": "https://aliexpress.ru/category/858/pet-products?SortType=total_tranpro_desc",
-            "office-products": "https://aliexpress.ru/category/16029/home-improvement-tools?SortType=total_tranpro_desc",  # Closest match
+            "office-products": "https://aliexpress.ru/category/16029/home-improvement-tools?SortType=total_tranpro_desc",
             "sports-outdoors": "https://aliexpress.ru/category/7/sports-entertainment?SortType=total_tranpro_desc",
-            "toys-games": "https://aliexpress.ru/category/9/toys-hobbies?SortType=total_tranpro_desc"
+            "toys-games": "https://aliexpress.ru/category/9/toys-hobbies?SortType=total_tranpro_desc",
+            "adult": "https://aliexpress.ru/category/16002/adult-products?SortType=total_tranpro_desc"
         }
         # SortType=total_tranpro_desc = Sort by Orders (best sellers first)
         return ALIEXPRESS_CATEGORY_MAP.get(category_id, "https://aliexpress.ru/category/6/home-garden-office?SortType=total_tranpro_desc")

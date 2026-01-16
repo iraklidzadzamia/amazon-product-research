@@ -116,6 +116,15 @@ CATEGORY_URLS = {
         "fr": "https://www.amazon.fr/gp/bestsellers/toys/",
         "it": "https://www.amazon.it/gp/bestsellers/toys/",
         "es": "https://www.amazon.es/gp/bestsellers/toys/"
+    },
+    "adult": {
+        "us": "https://www.amazon.com/s?k=sex+products&s=review-rank",
+        "jp": "https://www.amazon.co.jp/s?k=adult+products&s=review-rank",
+        "de": "https://www.amazon.de/s?k=adult+products&s=review-rank",
+        "uk": "https://www.amazon.co.uk/s?k=adult+products&s=review-rank",
+        "fr": "https://www.amazon.fr/s?k=adult+products&s=review-rank",
+        "it": "https://www.amazon.it/s?k=adult+products&s=review-rank",
+        "es": "https://www.amazon.es/s?k=adult+products&s=review-rank"
     }
 }
 

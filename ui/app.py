@@ -379,7 +379,8 @@ def main():
                 "pet-supplies": "🐾 Pet Supplies",
                 "office-products": "📎 Office Products",
                 "sports-outdoors": "⚽ Sports & Outdoors",
-                "toys-games": "🎮 Toys & Games"
+                "toys-games": "🎮 Toys & Games",
+                "adult": "🔞 Adult (18+)"
             }
             
             cols = st.columns(3)
