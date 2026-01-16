@@ -108,6 +108,23 @@ def find_similar_in_list(
     return best_match
 
 
+def find_best_seller_match(products: list[dict]) -> Optional[dict]:
+    """
+    Find the best seller (top ranked product) from a list.
+    Returns the product with position 1 or highest reviews if no position.
+    """
+    if not products:
+        return None
+    
+    # Try to find position 1
+    for p in products:
+        if p.get('position') == 1:
+            return p
+    
+    # Otherwise return the one with most reviews
+    return max(products, key=lambda x: x.get('reviewsCount', 0) or 0, default=None)
+
+
 def find_opportunities(
     jp_products: list[dict],
     us_products: list[dict],
