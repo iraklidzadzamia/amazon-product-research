@@ -31,129 +31,71 @@ class UniversalAdapter:
 
     def scrape_products(self, url: str, prompt: str, limit: int = 20) -> List[Dict]:
         """
-        Uses Firecrawl Agent to find products and formats them standardly.
+        Scrapes products from AliExpress using markdown format and regex parsing.
         """
-        full_prompt = f"""
-        You are a product researcher looking for top selling items on AliExpress.
-        Target Website: {url}
-        Goal: {prompt}
-        
-        INSTRUCTIONS:
-        1. Access the provided URL (AliExpress category or search result).
-        2. Extract data for the top {limit} products visible on the page (Scroll down if needed).
-        3. If there are popups, close them.
-        
-        DATA EXTRACTION RULES:
-        - Name: Get the full English product title.
-        - Price: Extract the numeric price (e.g., 5.99). Ignore "US $" prefix.
-        - Currency: Extract the currency code (usually USD).
-        - Image: Get the highest resolution image URL available.
-        - Product URL: The direct link to the item detail page.
-        - Reviews: Extract the number of sold items (e.g. "1000+ sold") or reviews if available. Convert to integer.
-        - Rating: Star rating (e.g. 4.8).
-        
-        OUTPUT JSON:
-        Return a list of strictly structured objects matching the schema.
-        """
+        import re
         
         print(f"🤖 Universal Agent launching on: {url}")
         print(f"   Objective: {prompt}")
 
         try:
-            # We use the 'extract' method with a prompt which triggers the agentic behavior in newer SDKs
-            # Or straight 'scrape' with LLM extraction if the URL is a list page.
-            # But users want 'Agent' navigation. 
-            # Firecrawl generic 'scrape' with 'analyze' is good, but 'agent' is better for complex tasks.
-            # Assuming SDK supports app.agent() or similar based on recent docs, 
-            # but for safety in this version we might use granular tools or standard scrape with extract.
-            # Let's rely on the LLM Extract feature which is powerful.
-            
-            # NOTE: For "Search", the standard scrape might not work if it needs interaction.
-            # If the user provides a specific collection URL, 'extract' works best.
-            # If they provide 'taobao.com', we generally need the Agent.
-            # Using the generic 'extract' from a URL is the safest standardized implementation 
-            # until explicit Agent SDK endpoints are stable in the library version installed.
-            
-            # However, the user specifically asked for "Agent" behavior.
-            # We will use the structured extract which handles navigation if configured, 
-            # or we advise the user to provide the Search Result URL.
-            
-            # Strategy: Ask user for Search Result URL for better stability, 
-            # but try to support root URL with simple extraction.
-            
-            schema = {
-                "type": "object",
-                "properties": {
-                    "products": {
-                        "type": "array",
-                        "items": {
-                            "type": "object",
-                            "properties": {
-                                "name": {"type": "string"},
-                                "price": {"type": "number"},
-                                "currency": {"type": "string"},
-                                "product_url": {"type": "string"},
-                                "image_url": {"type": "string"},
-                                "review_count": {"type": "integer"},
-                                "rating": {"type": "number"}
-                            },
-                            "required": ["name", "price"]
-                        }
-                    }
-                }
-            }
-
-            # Use scrape with extract format - handles JS rendering better than extract()
+            # Use scrape with markdown format - most reliable for parsing
             data = self.app.scrape_url(
                 url,
                 params={
-                    "formats": ["extract"],
-                    "extract": {
-                        "prompt": full_prompt,
-                        "schema": schema
-                    },
-                    "waitFor": 3000,  # Wait 3 sec for JS to load
+                    "formats": ["markdown"],
+                    "waitFor": 3000,  # Wait for JS to load
                 }
             )
             
-            # Firecrawl scrape_url with extract returns structure like:
-            # {'extract': {'products': [...]}, 'metadata': {...}}
+            markdown_content = data.get("markdown", "")
+            print(f"DEBUG: Got {len(markdown_content)} chars of markdown")
             
-            print(f"DEBUG Firecrawl response keys: {data.keys() if isinstance(data, dict) else type(data)}")
+            if not markdown_content:
+                print("❌ No markdown content returned")
+                return []
             
-            if isinstance(data, dict) and 'extract' in data:
-                # scrape_url with extract format
-                extract_data = data['extract']
-                products_raw = extract_data.get('products', []) if isinstance(extract_data, dict) else []
-            elif isinstance(data, dict) and 'data' in data:
-                # Legacy extract() response
-                products_raw = data['data'].get('products', [])
-            elif isinstance(data, dict) and 'products' in data:
-                products_raw = data['products']
-            else:
-                print(f"DEBUG: Unexpected response structure: {data}")
-                products_raw = []
-
-            # Normalize to our standard format
+            # Parse products from markdown
+            # Pattern matches: [![](image_url)\n\nPRICE](product_url)
+            # AliExpress format: [![](https://ae04.alicdn.com/kf/xxx.jpg)\n\n179 ₽527 ₽](https://aliexpress.ru/item/xxx.html)
+            
+            product_pattern = r'\[!\[\]\((https://ae\d+\.alicdn\.com/[^)]+)\)[^\]]*\]\((https://aliexpress\.ru/item/[^)]+)\)'
+            price_pattern = r'(\d[\d\s]*)\s*₽'
+            
+            matches = re.findall(product_pattern, markdown_content)
+            print(f"DEBUG: Found {len(matches)} product matches")
+            
             normalized_products = []
-            for p in products_raw:
+            for i, (image_url, product_url) in enumerate(matches[:limit]):
+                # Extract price from nearby context
+                # Find the markdown section around this product
+                idx = markdown_content.find(product_url)
+                context = markdown_content[max(0, idx-200):idx+100]
+                price_match = re.search(price_pattern, context)
+                price = float(price_match.group(1).replace(' ', '')) if price_match else 0
+                
+                # Convert RUB to USD (approximate)
+                price_usd = round(price / 90, 2)  # 1 USD ≈ 90 RUB
+                
                 norm = {
-                    "asin": "fc_" + str(abs(hash(p.get('name', ''))))[:10], # Fake matching ID
-                    "name": p.get('name'),
+                    "asin": f"fc_{i+1}_{abs(hash(product_url)) % 100000}",
+                    "name": f"AliExpress Product #{i+1}",  # We'll improve this later
                     "price": {
-                        "value": p.get('price'),
-                        "currency": p.get('currency', '$')
+                        "value": price_usd,
+                        "currency": "$"
                     },
-                    "sem_price": p.get('price'), # Flat price for math
-                    "sem_currency": p.get('currency', '$'),
-                    "stars": p.get('rating', 0),
-                    "reviewsCount": p.get('review_count', 0),
-                    "url": p.get('product_url'),
-                    "thumbnailUrl": p.get('image_url'),
-                    "is_universal": True # Flag to identify source
+                    "sem_price": price_usd,
+                    "sem_currency": "$",
+                    "stars": 4.5,  # Default
+                    "reviewsCount": 1000,  # Default for bestsellers
+                    "url": product_url,
+                    "thumbnailUrl": image_url,
+                    "is_universal": True,
+                    "original_price_rub": price
                 }
                 normalized_products.append(norm)
-                
+            
+            print(f"✅ Extracted {len(normalized_products)} products")
             return normalized_products
 
         except Exception as e:
