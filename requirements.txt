@@ -1,4 +1,5 @@
 # Amazon Product Research Tool - Dependencies
+# Updated: 2026-01-16 - Force reinstall with firecrawl
 streamlit>=1.28.0
 pandas>=2.0.0
 apify-client>=1.0.0
