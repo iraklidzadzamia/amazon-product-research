@@ -247,9 +247,7 @@ def main():
             for code, info in MARKETS.items()
         }
         
-            format_func=lambda x: market_options.get(x, "🌐 Custom Site (AI Agent)"),
-            index=1  # Default: Japan
-        )
+
         
         # Append Universal option if not in dict (it's a hack to show it in selectbox)
         # Actually easier to just add it to options dict temporarily or handle in code
