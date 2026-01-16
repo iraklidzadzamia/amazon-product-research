@@ -9,14 +9,22 @@ load_dotenv()
 class UniversalAdapter:
     def __init__(self):
         # Try st.secrets first (Streamlit Cloud), then fallback to os.getenv (local)
+        self.api_key = None
+        
         try:
             import streamlit as st
-            self.api_key = st.secrets.get("FIRECRAWL_API_KEY", None)
-        except:
-            self.api_key = None
+            # st.secrets uses bracket notation, not .get()
+            if "FIRECRAWL_API_KEY" in st.secrets:
+                self.api_key = st.secrets["FIRECRAWL_API_KEY"]
+                print(f"✅ Loaded FIRECRAWL_API_KEY from st.secrets")
+        except Exception as e:
+            print(f"⚠️ Could not load from st.secrets: {e}")
         
+        # Fallback to os.getenv for local development
         if not self.api_key:
             self.api_key = os.getenv("FIRECRAWL_API_KEY")
+            if self.api_key:
+                print(f"✅ Loaded FIRECRAWL_API_KEY from os.getenv")
         
         if not self.api_key:
             raise ValueError("FIRECRAWL_API_KEY not found in secrets or .env")
