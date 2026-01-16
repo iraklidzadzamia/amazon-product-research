@@ -173,7 +173,8 @@ def scrape_bestsellers(
         "maxItemsPerStartUrl": max_results,  # Correct name!
         "depthOfCrawl": depth,               # Correct name!
         "language": language,
-        "detailedInformation": False,
+        "detailedInformation": False, # Renamed in some versions
+        "scrapeProductDetails": False, # EXPLICITLY disable deep crawling to save usage
         "useCaptchaSolver": False,
     }
     
