@@ -62,13 +62,11 @@ class UniversalAdapter:
 
         try:
             # Use scrape with markdown format - most reliable for parsing
-            # Note: Method is .scrape() in newer SDK versions, not .scrape_url()
+            # Note: Pass options directly, not in params dict
             data = self.app.scrape(
                 url,
-                params={
-                    "formats": ["markdown"],
-                    "waitFor": 3000,  # Wait for JS to load
-                }
+                formats=["markdown"],
+                wait_for=3000  # Wait for JS to load
             )
             
             markdown_content = data.get("markdown", "")
