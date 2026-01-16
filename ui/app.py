@@ -629,7 +629,8 @@ def run_analysis(source_market, target_market, categories, max_results, min_revi
             # Standard Amazon Flow
             source_data = {}
             for i, category in enumerate(categories):
-                status_text.text(f"🔄 Scraping {category} from {market_options[source_market]}...")
+                market_name = market_options.get(source_market, source_market)
+                status_text.text(f"🔄 Scraping {category} from {market_name}...")
                 url = CATEGORY_URLS[category][source_market]
                 products = scrape_bestsellers(url, max_results=max_results, subcategories=subcategories)
                 source_data[category] = products
@@ -651,7 +652,7 @@ def run_analysis(source_market, target_market, categories, max_results, min_revi
         progress_bar.progress(80)
         
         # Detect if we are in universal mode
-        is_universal = True if (universal_params and 'url' in universal_params) else False
+        is_universal = True if (universal_params and 'prompt' in universal_params) else False
         
         opportunities = compare_markets(
             us_data=target_data,
