@@ -69,7 +69,13 @@ class UniversalAdapter:
                 wait_for=3000  # Wait for JS to load
             )
             
-            markdown_content = data.get("markdown", "")
+            # Firecrawl v2 returns a Document object (Pydantic model), not a dict
+            # Access markdown via attribute, with fallback for dict compatibility
+            if hasattr(data, 'markdown'):
+                markdown_content = data.markdown or ""
+            else:
+                markdown_content = data.get("markdown", "") if isinstance(data, dict) else ""
+            
             st.success(f"✅ Firecrawl responded! Markdown length: {len(markdown_content)} chars")
             
             # Show preview of markdown for debugging
@@ -78,7 +84,7 @@ class UniversalAdapter:
                 st.code(markdown_content[:1000], language="markdown")
             else:
                 st.warning("⚠️ No markdown content in response!")
-                st.json(data)  # Show raw response
+                st.text(str(data))  # Show raw response (works for both dict and Pydantic)
                 return []
             
             # Parse products from markdown
