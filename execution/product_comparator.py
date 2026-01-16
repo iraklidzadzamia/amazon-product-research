@@ -201,8 +201,8 @@ def find_opportunities(
                 opportunities.append(opportunity)
             else:
                 # Match found but might still be opportunity if US version underperforms
-            us_reviews = us_match.get('reviewsCount', 0) or 0
-            score = us_match.get('_similarity_score', 0)
+                us_reviews = us_match.get('reviewsCount', 0) or 0
+                score = us_match.get('_similarity_score', 0)
             
             # If JP has significantly more reviews, it's still an opportunity
             if jp_reviews > us_reviews * 3:  # JP has 3x more reviews
