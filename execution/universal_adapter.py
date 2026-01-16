@@ -13,6 +13,18 @@ class UniversalAdapter:
             raise ValueError("FIRECRAWL_API_KEY not found in .env")
         self.app = FirecrawlApp(api_key=self.api_key)
 
+    def get_category_url(self, category_id: str) -> str:
+        """Map internal category ID to AliExpress Category URL."""
+        ALIEXPRESS_CATEGORY_MAP = {
+            "home-garden": "https://www.aliexpress.com/category/15/home-garden.html",  # Home & Garden
+            "pet-supplies": "https://www.aliexpress.com/category/200003507/pet-products.html", # Pet Products
+            "office-products": "https://www.aliexpress.com/category/21/education-office-supplies.html", # Office & School
+            "sports-outdoors": "https://www.aliexpress.com/category/18/sports-entertainment.html", # Sports
+            "toys-games": "https://www.aliexpress.com/category/26/toys-hobbies.html" # Toys
+        }
+        return ALIEXPRESS_CATEGORY_MAP.get(category_id, "https://www.aliexpress.com")
+
+
     def scrape_products(self, url: str, prompt: str) -> List[Dict]:
         """
         Uses Firecrawl Agent to find products and formats them standardly.

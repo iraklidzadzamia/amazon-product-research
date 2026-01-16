@@ -326,19 +326,27 @@ def main():
         
         # Dynamic Header based on Source
         if source_market == 'universal':
-            st.markdown(f"Finding bestsellers on **Universal Source** to compare with **{market_options.get(target_market, target_market)}**")
+            st.markdown(f"Finding bestsellers on **AliExpress** to compare with **{market_options.get(target_market, target_market)}**")
             
             # Universal Source Inputs
             st.subheader("🌐 Universal Source Configuration")
+            st.info("ℹ️ Categories are automatically mapped to AliExpress. Selected categories will be scraped from BOTH AliExpress (Source) and Amazon (Target) for direct comparison.")
+            
             univ_col1, univ_col2 = st.columns([2, 1])
             with univ_col1:
-                target_site_url = st.text_input("Target URL", value="https://www.aliexpress.com", help="The starting URL for the agent (e.g. AliExpress category page)")
-            with univ_col2:
-                 agent_prompt = st.text_input("Search Prompt", value="Find top 10 trending kitchen gadgets", help="What should the agent look for?")
+                 # Optional: Allow Manual Override
+                 use_manual_url = st.checkbox("Use Custom URL instead of Category Map", value=False)
                  
-            # Re-enable Category Selection for the TARGET market
-            st.subheader("🎯 Target Amazon Category")
-            st.info("Select the Amazon category to compare your AliExpress findings against.")
+            with univ_col2:
+                 agent_prompt = st.text_input("Refinement Prompt (Optional)", value="Find top trending items", help="Filter logic for the AI Agent")
+
+            if use_manual_url:
+                target_site_url = st.text_input("Custom Target URL", value="https://www.aliexpress.com")
+            else:
+                target_site_url = None # Will be derived from category loop
+                 
+            # Shared Category Selection
+            st.subheader("📦 Select Categories (Source & Target)")
             
             category_names = {
                 "home-garden": "🏠 Home & Kitchen",
@@ -357,8 +365,8 @@ def main():
                         selected_categories.append(cat_id)
 
             if not selected_categories:
-                st.warning("Please select a target Amazon category for comparison.")
-            
+                st.warning("Please select at least one category.")
+                
         else:
             st.markdown(f"Finding products popular in **{market_options.get(source_market, source_market)}** but not in **{market_options.get(target_market, target_market)}**")
             
@@ -390,7 +398,7 @@ def main():
         # Logic for Universal vs Standard Validation
         is_ready = False
         if source_market == 'universal':
-             is_ready = bool(target_site_url and agent_prompt)
+             is_ready = len(selected_categories) > 0 and (not use_manual_url or target_site_url)
         else:
              is_ready = len(selected_categories) > 0
 
@@ -402,10 +410,11 @@ def main():
                 universal_params = {}
                 if source_market == 'universal':
                     universal_params = {
-                        "url": target_site_url,
-                        "prompt": agent_prompt
+                        "prompt": agent_prompt,
+                        "use_manual_url": use_manual_url,
+                        "manual_url": target_site_url if use_manual_url else None
                     }
-                    # Keep selected_categories as is (user selected target categories)
+                    # We utilize the same 'selected_categories' list for the loop!
  
                 result = run_analysis(
                     source_market=source_market,
@@ -589,25 +598,29 @@ def run_analysis(source_market, target_market, categories, max_results, min_revi
         
         if source_market == 'universal' and universal_params:
             # Universal Source Flow
-            status_text.text(f"🤖 Agent Scraping {universal_params['url']}...")
-            
             # Lazy import to avoid circular dependency
             from universal_adapter import UniversalAdapter
             adapter = UniversalAdapter()
             
-            products = adapter.scrape_products(
-                url=universal_params['url'],
-                prompt=universal_params['prompt']
-            )
-            
-            # Since Universal returns a flat list, we need to map it to the requested categories
-            # Strategy: Assign the SAME AliExpress product list to ALL selected target categories
-            # This allows comparing the scraped gadgets against "Home" AND "Office" if the user selected both.
             source_data = {}
-            for cat in categories:
-                source_data[cat] = products
-                
-            progress_bar.progress(30)
+            
+            for i, category in enumerate(categories):
+                 status_text.text(f"🤖 Agent Scraping {category} from AliExpress...")
+                 
+                 # Determine URL
+                 if universal_params.get("use_manual_url") and universal_params.get("manual_url"):
+                     # Use the same manual URL for all categories (user override)
+                     target_url = universal_params["manual_url"]
+                 else:
+                     # Use mapping
+                     target_url = adapter.get_category_url(category)
+                 
+                 products = adapter.scrape_products(
+                    url=target_url,
+                    prompt=universal_params['prompt']
+                 )
+                 source_data[category] = products
+                 progress_bar.progress(10 + int(30 * (i + 1) / len(categories)))
             
         else:
             # Standard Amazon Flow
