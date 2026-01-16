@@ -598,7 +598,13 @@ def run_analysis(source_market, target_market, categories, max_results, min_revi
         status_text.text(f"🔄 Scraping {market_name}...")
         progress_bar.progress(10)
         
+        # DEBUG: Print values to trace execution path
+        print(f"DEBUG: source_market = '{source_market}', type = {type(source_market)}")
+        print(f"DEBUG: universal_params = {universal_params}")
+        print(f"DEBUG: Condition result = {source_market == 'universal' and bool(universal_params)}")
+        
         if source_market == 'universal' and universal_params:
+            print("DEBUG: Entering UNIVERSAL branch (Firecrawl)")
             # Universal Source Flow
             # Lazy import to avoid circular dependency
             from universal_adapter import UniversalAdapter
