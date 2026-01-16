@@ -618,7 +618,8 @@ def run_analysis(source_market, target_market, categories, max_results, min_revi
                  
                  products = adapter.scrape_products(
                     url=target_url,
-                    prompt=universal_params['prompt']
+                    prompt=universal_params['prompt'],
+                    limit=max_results
                  )
                  source_data[category] = products
                  progress_bar.progress(10 + int(30 * (i + 1) / len(categories)))

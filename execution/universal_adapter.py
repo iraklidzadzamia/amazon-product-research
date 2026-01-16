@@ -25,7 +25,7 @@ class UniversalAdapter:
         return ALIEXPRESS_CATEGORY_MAP.get(category_id, "https://www.aliexpress.com")
 
 
-    def scrape_products(self, url: str, prompt: str) -> List[Dict]:
+    def scrape_products(self, url: str, prompt: str, limit: int = 20) -> List[Dict]:
         """
         Uses Firecrawl Agent to find products and formats them standardly.
         """
@@ -36,7 +36,7 @@ class UniversalAdapter:
         
         INSTRUCTIONS:
         1. Access the provided URL (AliExpress category or search result).
-        2. Extract data for the top 10-20 products visible on the page.
+        2. Extract data for the top {limit} products visible on the page (Scroll down if needed).
         3. If there are popups, close them.
         
         DATA EXTRACTION RULES:
