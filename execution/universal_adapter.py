@@ -8,25 +8,29 @@ load_dotenv()
 
 class UniversalAdapter:
     def __init__(self):
+        import streamlit as st
         # Try st.secrets first (Streamlit Cloud), then fallback to os.getenv (local)
         self.api_key = None
+        self.api_key_source = None
         
         try:
-            import streamlit as st
             # st.secrets uses bracket notation, not .get()
             if "FIRECRAWL_API_KEY" in st.secrets:
                 self.api_key = st.secrets["FIRECRAWL_API_KEY"]
-                print(f"✅ Loaded FIRECRAWL_API_KEY from st.secrets")
+                self.api_key_source = "st.secrets"
+                st.info(f"🔑 API key loaded from: st.secrets (len={len(self.api_key)})")
         except Exception as e:
-            print(f"⚠️ Could not load from st.secrets: {e}")
+            st.warning(f"⚠️ Could not load from st.secrets: {e}")
         
         # Fallback to os.getenv for local development
         if not self.api_key:
             self.api_key = os.getenv("FIRECRAWL_API_KEY")
             if self.api_key:
-                print(f"✅ Loaded FIRECRAWL_API_KEY from os.getenv")
+                self.api_key_source = "os.getenv"
+                st.info(f"🔑 API key loaded from: os.getenv (len={len(self.api_key)})")
         
         if not self.api_key:
+            st.error("❌ FIRECRAWL_API_KEY not found in secrets or .env!")
             raise ValueError("FIRECRAWL_API_KEY not found in secrets or .env")
         
         self.app = FirecrawlApp(api_key=self.api_key)
@@ -52,9 +56,9 @@ class UniversalAdapter:
         Scrapes products from AliExpress using markdown format and regex parsing.
         """
         import re
+        import streamlit as st
         
-        print(f"🤖 Universal Agent launching on: {url}")
-        print(f"   Objective: {prompt}")
+        st.info(f"🤖 Calling Firecrawl scrape_url on: {url}")
 
         try:
             # Use scrape with markdown format - most reliable for parsing
@@ -67,10 +71,15 @@ class UniversalAdapter:
             )
             
             markdown_content = data.get("markdown", "")
-            print(f"DEBUG: Got {len(markdown_content)} chars of markdown")
+            st.success(f"✅ Firecrawl responded! Markdown length: {len(markdown_content)} chars")
             
-            if not markdown_content:
-                print("❌ No markdown content returned")
+            # Show preview of markdown for debugging
+            if markdown_content:
+                st.info("📄 Markdown preview (first 1000 chars):")
+                st.code(markdown_content[:1000], language="markdown")
+            else:
+                st.warning("⚠️ No markdown content in response!")
+                st.json(data)  # Show raw response
                 return []
             
             # Parse products from markdown
@@ -81,7 +90,7 @@ class UniversalAdapter:
             price_pattern = r'(\d[\d\s]*)\s*₽'
             
             matches = re.findall(product_pattern, markdown_content)
-            print(f"DEBUG: Found {len(matches)} product matches")
+            st.info(f"🔍 Regex found {len(matches)} product matches")
             
             normalized_products = []
             for i, (image_url, product_url) in enumerate(matches[:limit]):
