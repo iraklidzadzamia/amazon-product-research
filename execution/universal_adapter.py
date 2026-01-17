@@ -88,32 +88,77 @@ class UniversalAdapter:
                 return []
             
             # Parse products from markdown
-            # Pattern matches: [![](image_url)\n\nPRICE](product_url)
-            # AliExpress format: [![](https://ae04.alicdn.com/kf/xxx.jpg)\n\n179 ₽527 ₽](https://aliexpress.ru/item/xxx.html)
+            # AliExpress format in markdown:
+            # [![](image.jpg)\n\n462 ₽480 ₽\n\nМерный стакан G3.3 боросиликатное стекло 50 мл](https://aliexpress.ru/item/...)
+            # We need to extract: image_url, price, product_name, product_url
             
-            product_pattern = r'\[!\[\]\((https://ae\d+\.alicdn\.com/[^)]+)\)[^\]]*\]\((https://aliexpress\.ru/item/[^)]+)\)'
-            price_pattern = r'(\d[\d\s]*)\s*₽'
+            # Pattern to match the full product block including name
+            # Format: [![](IMAGE)\n\nPRICE\n\nNAME](URL)
+            full_pattern = r'\[!\[\]\((https://ae\d+\.alicdn\.com/[^)]+)\)[^\]]*?(\d[\d\s\xa0]*)\s*₽[^\]]*?([^\]₽\n][^\]]{10,}?)\]\((https://aliexpress\.ru/item/[^)]+)\)'
             
-            matches = re.findall(product_pattern, markdown_content)
+            matches = re.findall(full_pattern, markdown_content, re.DOTALL)
+            
+            # Fallback: simpler pattern if full pattern doesn't work
+            if len(matches) < 3:
+                # Try alternative parsing method
+                simple_pattern = r'\[!\[\]\((https://ae\d+\.alicdn\.com/[^)]+)\)[^\]]*\]\((https://aliexpress\.ru/item/[^)]+)\)'
+                simple_matches = re.findall(simple_pattern, markdown_content)
+                
+                # Extract names from context for simple matches
+                matches = []
+                for image_url, product_url in simple_matches:
+                    idx = markdown_content.find(product_url)
+                    # Get context before the URL to find name
+                    context = markdown_content[max(0, idx-300):idx]
+                    
+                    # Find price
+                    price_pattern = r'(\d[\d\s\xa0]*)\s*₽'
+                    price_match = re.search(price_pattern, context)
+                    price_str = price_match.group(1) if price_match else "0"
+                    
+                    # Find name - text after last price, before the closing bracket
+                    # Name is usually the last text block before ](url)
+                    name_pattern = r'[\n\\]+([^\n\[\]₽]{10,}?)\s*$'
+                    name_match = re.search(name_pattern, context)
+                    name = name_match.group(1).strip() if name_match else ""
+                    
+                    # Clean up name
+                    name = re.sub(r'^[\s\\n]+', '', name)
+                    name = re.sub(r'[\s\\n]+$', '', name)
+                    
+                    matches.append((image_url, price_str, name, product_url))
+            
             st.info(f"🔍 Regex found {len(matches)} product matches")
             
             normalized_products = []
-            for i, (image_url, product_url) in enumerate(matches[:limit]):
-                # Extract price from nearby context
-                # Find the markdown section around this product
-                idx = markdown_content.find(product_url)
-                context = markdown_content[max(0, idx-200):idx+100]
-                price_match = re.search(price_pattern, context)
-                # Russian prices use non-breaking space (\xa0) as thousand separator
-                price_str = price_match.group(1).replace(' ', '').replace('\xa0', '') if price_match else "0"
-                price = float(price_str) if price_str else 0
+            for i, match in enumerate(matches[:limit]):
+                if len(match) == 4:
+                    image_url, price_str, product_name, product_url = match
+                else:
+                    # Fallback for 2-element matches
+                    image_url, product_url = match[0], match[1]
+                    price_str = "0"
+                    product_name = ""
+                
+                # Clean price string
+                price_str = str(price_str).replace(' ', '').replace('\xa0', '')
+                try:
+                    price = float(price_str) if price_str else 0
+                except:
+                    price = 0
                 
                 # Convert RUB to USD (approximate)
                 price_usd = round(price / 90, 2)  # 1 USD ≈ 90 RUB
                 
+                # Clean product name
+                product_name = product_name.strip() if product_name else f"AliExpress Product #{i+1}"
+                product_name = re.sub(r'\\n|\\t|\s+', ' ', product_name).strip()
+                if len(product_name) < 5:
+                    product_name = f"AliExpress Product #{i+1}"
+                
                 norm = {
                     "asin": f"fc_{i+1}_{abs(hash(product_url)) % 100000}",
-                    "name": f"AliExpress Product #{i+1}",  # We'll improve this later
+                    "name": product_name[:100],  # Limit name length
                     "price": {
                         "value": price_usd,
                         "currency": "$"
@@ -128,6 +173,10 @@ class UniversalAdapter:
                     "original_price_rub": price
                 }
                 normalized_products.append(norm)
+            
+            # Debug: show first product name
+            if normalized_products:
+                st.info(f"📝 First product name: {normalized_products[0].get('name', 'N/A')[:50]}...")
             
             print(f"✅ Extracted {len(normalized_products)} products")
             return normalized_products

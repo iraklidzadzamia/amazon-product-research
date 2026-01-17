@@ -155,21 +155,28 @@ def find_opportunities(
             continue
 
         if is_universal_source:
-            # === UNIVERSAL STRATEGY: ARBITRAGE ===
-            # Compare against the Target Market Leader (Best Seller)
-            best_seller = find_best_seller_match(us_products)
-            if not best_seller:
-                continue
-                
-            # Simple Price Arbitrage Calculation
-            # TODO: Add currency conversion in future. Assuming generic scraping is USD-normalized or aware.
+            # === UNIVERSAL STRATEGY: ARBITRAGE with SIMILARITY MATCHING ===
+            # First try to find a SIMILAR product in Target Market
+            similar_match = find_similar_in_list(jp_product, us_products, threshold=0.2)
             
+            # If no similar found, fall back to best seller for price reference
+            if similar_match is None:
+                best_seller = find_best_seller_match(us_products)
+                if not best_seller:
+                    continue
+                us_match = best_seller
+                match_type = "category_bestseller"
+            else:
+                us_match = similar_match
+                match_type = "similar_product"
+            
+            # Price Arbitrage Calculation
             src_price_val = jp_product.get('price', {}).get('value', 0)
             if isinstance(src_price_val, str):
                 try: src_price_val = float(src_price_val.replace(',',''))
                 except: src_price_val = 0
                 
-            target_price_val = best_seller.get('price', {}).get('value', 0)
+            target_price_val = us_match.get('price', {}).get('value', 0)
             if isinstance(target_price_val, str):
                 try: target_price_val = float(target_price_val.replace(',',''))
                 except: target_price_val = 0
@@ -179,16 +186,32 @@ def find_opportunities(
                 
             margin_multiplier = target_price_val / src_price_val
             
-            # Opportunity Score based on Margin
-            # 3x markup = 100 score. 1x markup = 0 score.
-            opp_score = min(max((margin_multiplier - 1) * 50, 0), 100)
+            # Opportunity Score based on Margin and Match Quality
+            # 3x markup = base 100 score. Adjusted by match quality.
+            base_score = min(max((margin_multiplier - 1) * 50, 0), 100)
+            
+            # Boost score if we found a similar product, reduce if just bestseller
+            similarity = us_match.get('_similarity_score', 0)
+            if match_type == "similar_product" and similarity > 0.3:
+                opp_score = base_score  # Good match, keep full score
+            elif match_type == "similar_product":
+                opp_score = base_score * 0.8  # Weak match, slight penalty
+            else:
+                opp_score = base_score * 0.5  # Bestseller comparison, big penalty
+            
+            # Create reason with match info
+            if match_type == "similar_product":
+                reason = f"Arbitrage: ${src_price_val:.2f} → ${target_price_val:.2f} ({margin_multiplier:.1f}x) | Similar: {us_match.get('name', '')[:40]}..."
+            else:
+                reason = f"Potential Arbitrage: ${src_price_val:.2f} vs Category Leader ${target_price_val:.2f} ({margin_multiplier:.1f}x) [No exact match found]"
             
             opportunity = {
                 'jp_product': jp_product,
-                'us_match': best_seller,
-                'similarity_score': 0,
+                'us_match': us_match,
+                'similarity_score': similarity,
                 'opportunity_score': opp_score,
-                'reason': f"Potential Arbitrage. Source: ${src_price_val} vs Market Leader: ${target_price_val} ({margin_multiplier:.1f}x Markup)"
+                'match_type': match_type,
+                'reason': reason
             }
             opportunities.append(opportunity)
             
