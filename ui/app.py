@@ -463,7 +463,11 @@ def main():
                     with st.spinner("🔄 AI анализирует продукты... (30-60 сек)"):
                         try:
                             # Get country names from market codes
-                            source_country = MARKETS[params['source_code']]['name']
+                            # Handle 'universal' (AliExpress) which is not in MARKETS
+                            if params['source_code'] == 'universal':
+                                source_country = "China (AliExpress)"
+                            else:
+                                source_country = MARKETS[params['source_code']]['name']
                             target_country = MARKETS[params['target_code']]['name']
                             
                             ai_result = analyze_opportunities(
