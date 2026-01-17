@@ -579,6 +579,9 @@ def main():
                                     # Add AI response to history
                                     st.session_state.chat_messages.append({"role": "assistant", "content": ai_response})
                                     
+                                    # Rerun to properly display conversation
+                                    st.rerun()
+                                    
                             except Exception as e:
                                 st.error(f"Ошибка AI: {e}")
                 
