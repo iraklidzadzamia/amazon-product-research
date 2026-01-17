@@ -26,6 +26,12 @@ from product_comparator import (
 )
 from ai_analyzer import analyze_opportunities, format_products_for_analysis
 
+# Cached scraping function (cache for 1 hour to avoid repeated API calls)
+@st.cache_data(ttl=3600, show_spinner=False)
+def cached_scrape_bestsellers(url: str, max_results: int, subcategories: int):
+    """Cached wrapper for scrape_bestsellers to avoid repeated API calls."""
+    return scrape_bestsellers(url, max_results=max_results, subcategories=subcategories)
+
 # Page config
 st.set_page_config(
     page_title="Amazon Product Research",
@@ -642,7 +648,7 @@ def search_product(query, markets, market_options):
             # Search in Home & Kitchen category as proxy
             url = CATEGORY_URLS.get('home-garden', {}).get(market)
             if url:
-                products = scrape_bestsellers(url, max_results=50, subcategories=1)
+                products = cached_scrape_bestsellers(url, max_results=50, subcategories=1)
                 
                 # Filter products that match query
                 matching = [
@@ -765,7 +771,7 @@ def run_analysis(source_market, target_market, categories, max_results, min_revi
                 market_name = market_options.get(source_market, source_market)
                 status_text.text(f"🔄 Scraping {category} from {market_name}...")
                 url = CATEGORY_URLS[category][source_market]
-                products = scrape_bestsellers(url, max_results=max_results, subcategories=subcategories)
+                products = cached_scrape_bestsellers(url, max_results=max_results, subcategories=subcategories)
                 source_data[category] = products
                 progress_bar.progress(10 + int(30 * (i + 1) / len(categories)))
         
@@ -776,7 +782,7 @@ def run_analysis(source_market, target_market, categories, max_results, min_revi
         for i, category in enumerate(categories):
             status_text.text(f"🔄 Scraping {category} from {market_options[target_market]}...")
             url = CATEGORY_URLS[category][target_market]
-            products = scrape_bestsellers(url, max_results=max_results, subcategories=subcategories)
+            products = cached_scrape_bestsellers(url, max_results=max_results, subcategories=subcategories)
             target_data[category] = products
             progress_bar.progress(40 + int(30 * (i + 1) / len(categories)))
         

@@ -10,6 +10,23 @@ import re
 from typing import Optional
 from difflib import SequenceMatcher
 
+# Currency conversion rates to USD (approximate, updated periodically)
+CURRENCY_TO_USD = {
+    '$': 1.0,
+    '¥': 0.0067,   # Japanese Yen: ~150 JPY = 1 USD
+    '₽': 0.011,    # Russian Ruble: ~90 RUB = 1 USD
+    '€': 1.08,     # Euro
+    '£': 1.27,     # British Pound
+    'GEL': 0.37,   # Georgian Lari
+}
+
+def convert_to_usd(value: float, currency: str) -> float:
+    """Convert a price to USD using approximate exchange rates."""
+    if not value:
+        return 0.0
+    rate = CURRENCY_TO_USD.get(currency, 1.0)
+    return round(value * rate, 2)
+
 
 def normalize_text(text: str) -> str:
     """Normalize text for comparison."""
@@ -486,18 +503,23 @@ def opportunities_to_csv_rows(opportunities: dict[str, list[dict]]) -> list[dict
             jp = opp['jp_product']
             us = opp.get('us_match') or {}
             
+            # Convert price to USD
+            price_val = jp.get('price', {}).get('value', 0)
+            price_currency = jp.get('price', {}).get('currency', '$')
+            price_usd = convert_to_usd(float(price_val) if price_val else 0, price_currency)
+            
             row = {
                 'category': category,
                 'opportunity_score': opp['opportunity_score'],
                 'reason': opp['reason'],
                 'jp_name': jp.get('name', ''),
                 'jp_asin': jp.get('asin', ''),
-                'jp_price': f"{jp.get('price', {}).get('currency', '')}{jp.get('price', {}).get('value', '')}",
+                'jp_price': f"${price_usd:.2f}",  # Always show in USD
                 'jp_stars': jp.get('stars', ''),
                 'jp_reviews': jp.get('reviewsCount', ''),
                 'jp_position': jp.get('position', ''),
                 'jp_url': jp.get('url', ''),
-                'jp_thumbnail': jp.get('thumbnailUrl', ''),  # Add thumbnail for image display
+                'jp_thumbnail': jp.get('thumbnailUrl', ''),
                 'us_match_name': us.get('name', ''),
                 'us_match_reviews': us.get('reviewsCount', ''),
                 'similarity_score': opp.get('similarity_score', 0),
