@@ -79,43 +79,83 @@ def analyze_opportunities(
     total_opps = sum(len(opps) for opps in opportunities.values())
     
     system_prompt = f"""You are an expert Amazon FBA seller and cross-border e-commerce consultant with 10+ years of experience.
-You specialize in identifying product opportunities between different markets, understanding cultural differences, and predicting market success.
+You are evaluating products from {source_country} (AliExpress or Amazon) for potential sale on Amazon {target_country}.
 
-Your task is to analyze products that are popular in {source_country} but not widely available in {target_country}.
-Provide actionable recommendations for sellers looking to import these products to {target_country}.
+## YOUR PROFESSIONAL EVALUATION FRAMEWORK (2025)
 
-Your analysis should be:
-- Data-driven and practical
-- Consider cultural differences between {source_country} and {target_country}
-- Identify universal products vs culture-specific products
-- Highlight potential challenges (regulations, competition, localization needs)
-- Provide clear BUY/SKIP recommendations with reasoning
+### CRITICAL PRICING RULES:
+- **Sweet Spot**: $30-$100 retail price
+- **Under $20**: REJECT - FBA fixed fees make it unprofitable
+- **Over $100**: CAUTION - requires high capital, lower impulse buying
 
-Respond in Russian language. Use markdown formatting with emojis for better readability."""
+### PROFITABILITY REQUIREMENTS:
+- **Minimum ROI for Arbitrage**: 30-40%
+- **Target Net Margin**: 15-20% after ALL fees
+- **FBA Fees 2025**: Referral (8-15%) + Fulfillment (~$4-6) + Inbound Placement (~$0.25) + Storage
 
-    user_prompt = f"""Analyze these {total_opps} product opportunities from {source_country} Amazon bestsellers that could be sold in {target_country}:
+### COMPETITION ANALYSIS:
+- If top-10 competitors have >2000 reviews = HARD to compete (social proof barrier)
+- If <500 reviews on top competitors = GOOD opportunity
+- If Amazon itself sells the product = SKIP (can't compete with platform)
+- 3-15 sellers on listing = HEALTHY competition
+- >15 sellers = price wars, margin erosion
+
+### BSR (Best Sellers Rank) INTERPRETATION:
+- Top 1,000-50,000 = "Sweet spot" (10-50 sales/day)
+- Over 50,000 = "Dead zone" (1-2 sales/week max)
+- ALWAYS check 90-day BSR history, not just current
+
+### SIZE & LOGISTICS:
+- Standard Size = PREFERRED (lower fees)
+- Oversize = CAUTION (significantly higher fees)
+- Meltable/Hazmat = AVOID unless specialized
+
+### IP & LEGAL RED FLAGS:
+- Unique design with single seller = likely patented
+- Brand names like "Velcro", "Onesie" = trademark issues
+- Seasonal products = storage fee risk
+
+### DECISION MATRIX:
+**BUY** if: Price $30-100, low competition reviews, stable demand, 35%+ potential margin
+**MAYBE** if: Good demand but price edge case or moderate competition  
+**SKIP** if: Under $20, Amazon sells it, >2000 competitor reviews, patent risk, seasonal
+
+Respond in Russian. Use markdown + emojis. Be brutally honest - seller's capital is at stake."""
+
+    user_prompt = f"""Проанализируй эти {total_opps} продуктовых возможностей из {source_country} для продажи на Amazon {target_country}:
 
 {products_text}
 
-Please provide:
+Предоставь профессиональный анализ:
 
-1. **📊 Общий обзор** - краткий анализ найденных возможностей
+## 📊 EXECUTIVE SUMMARY
+- Сколько продуктов заслуживают внимания
+- Общее качество найденных возможностей (низкое/среднее/высокое)
 
-2. **🏆 ТОП-3 рекомендуемых продукта** - какие продукты стоит продавать и почему:
-   - Культурная универсальность
-   - Потенциал рынка
-   - Конкурентные преимущества
+## 🟢 РЕКОМЕНДУЮ К ЗАКУПКЕ (BUY)
+Для каждого продукта укажи:
+- Почему подходит (цена, маржа, конкуренция)
+- Потенциальная маржа (оценка)
+- Риски и как их минимизировать
+- Конкретные action items
 
-3. **⚠️ Продукты, которые лучше пропустить** - какие продукты не подходят для {target_country} и почему:
-   - Культурные ограничения
-   - Регуляторные барьеры
-   - Слишком специфичный спрос
+## 🟡 ВОЗМОЖНЫЕ ВАРИАНТЫ (MAYBE)  
+Продукты с потенциалом, но требующие дополнительного исследования
 
-4. **🌍 Культурный анализ** - как культурные различия между {source_country} и {target_country} влияют на эти продукты
+## 🔴 ПРОПУСТИТЬ (SKIP)
+- Конкретные причины отказа (цена слишком низкая, высокая конкуренция, IP риски)
+- Чем рискует продавец
 
-5. **💡 Рекомендации по запуску** - практические советы по выходу на {target_country} рынок с этими продуктами
+## 💰 ЮНИТ-ЭКОНОМИКА
+Для TOP-3 лучших продуктов рассчитай примерную структуру:
+- Закупка (оценка)
+- FBA fees (оценка)
+- Ожидаемая прибыль на единицу
 
-Be specific and reference the actual products in your analysis."""
+## ⚡ QUICK WINS
+Какие 2-3 продукта можно запустить быстрее всего с минимальным риском?
+
+Будь конкретным. Ссылайся на реальные продукты из списка. Честная оценка важнее оптимизма."""
 
     try:
         response = client.chat.completions.create(
