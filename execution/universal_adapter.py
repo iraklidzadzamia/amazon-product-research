@@ -61,12 +61,23 @@ class UniversalAdapter:
         st.info(f"🤖 Calling Firecrawl scrape on: {url}")
 
         try:
-            # Use scrape with markdown format - most reliable for parsing
-            # Note: Pass options directly, not in params dict
+            # Use scrape with markdown format + scroll actions
+            # We need to scroll past the "Peak Sales" promo section to get real bestsellers
+            # The real bestsellers (with 100k+ sales) are below the promo carousel
             data = self.app.scrape(
                 url,
                 formats=["markdown"],
-                wait_for=3000  # Wait for JS to load
+                wait_for=3000,  # Wait for JS to load
+                actions=[
+                    {"type": "wait", "milliseconds": 2000},  # Wait for page load
+                    {"type": "scroll", "direction": "down"},  # Scroll to load more content
+                    {"type": "wait", "milliseconds": 1000},
+                    {"type": "scroll", "direction": "down"},  # Scroll again
+                    {"type": "wait", "milliseconds": 1000},
+                    {"type": "scroll", "direction": "down"},  # Scroll more to get bestsellers
+                    {"type": "wait", "milliseconds": 1000},
+                    {"type": "scrape"}  # Now scrape the full page
+                ]
             )
             
             # Firecrawl v2 returns a Document object (Pydantic model), not a dict
@@ -156,6 +167,27 @@ class UniversalAdapter:
                 if len(product_name) < 5:
                     product_name = f"AliExpress Product #{i+1}"
                 
+                # Try to extract sales count from context around the product URL
+                idx = markdown_content.find(product_url) if product_url else -1
+                sales_count = 0
+                if idx > 0:
+                    sales_context = markdown_content[max(0, idx-500):idx+200]
+                    # Pattern for "566 627 sold" or "566627 sold" or "продано"
+                    sales_patterns = [
+                        r'(\d[\d\s\xa0]*)\s*sold',  # English: "566 627 sold"
+                        r'(\d[\d\s\xa0]*)\s*продано',  # Russian: "566 627 продано"
+                        r'\*\s*(\d[\d\s\xa0]+)\s*\*',  # ** 566 627 **
+                    ]
+                    for sp in sales_patterns:
+                        sales_match = re.search(sp, sales_context, re.IGNORECASE)
+                        if sales_match:
+                            sales_str = sales_match.group(1).replace(' ', '').replace('\xa0', '')
+                            try:
+                                sales_count = int(sales_str)
+                                break
+                            except:
+                                pass
+                
                 norm = {
                     "asin": f"fc_{i+1}_{abs(hash(product_url)) % 100000}",
                     "name": product_name[:100],  # Limit name length
@@ -166,7 +198,8 @@ class UniversalAdapter:
                     "sem_price": price_usd,
                     "sem_currency": "$",
                     "stars": 4.5,  # Default
-                    "reviewsCount": 1000,  # Default for bestsellers
+                    "reviewsCount": sales_count if sales_count > 0 else 1000,  # Use real sales or default
+                    "salesCount": sales_count,  # Store actual sales count
                     "url": product_url,
                     "thumbnailUrl": image_url,
                     "is_universal": True,
