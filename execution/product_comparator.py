@@ -71,18 +71,110 @@ def calculate_similarity(name1: str, name2: str) -> float:
     return combined
 
 
+def ai_semantic_match(jp_product_name: str, us_products: list[dict], use_ai: bool = True) -> Optional[dict]:
+    """
+    Use AI to semantically match a Japanese product with US products.
+    AI reads the whole name and understands what type of product it is.
+    
+    Args:
+        jp_product_name: Japanese product name (may contain Japanese characters)
+        us_products: List of US products to compare against
+        use_ai: If True, uses OpenAI for semantic matching
+    
+    Returns:
+        Best matching US product or None
+    """
+    if not use_ai or not us_products:
+        return None
+    
+    try:
+        import os
+        import streamlit as st
+        from openai import OpenAI
+        
+        # Get API key
+        api_key = None
+        try:
+            if "OPENAI_API_KEY" in st.secrets:
+                api_key = st.secrets["OPENAI_API_KEY"]
+        except:
+            pass
+        if not api_key:
+            api_key = os.getenv("OPENAI_API_KEY")
+        
+        if not api_key:
+            return None
+        
+        client = OpenAI(api_key=api_key)
+        
+        # Build list of US products for AI to compare
+        us_product_list = []
+        for i, p in enumerate(us_products[:30]):  # Limit to 30 for token efficiency
+            us_product_list.append(f"{i+1}. {p.get('name', 'Unknown')[:100]}")
+        
+        us_products_text = "\n".join(us_product_list)
+        
+        prompt = f"""You are a product matching expert. Your task is to find if a Japanese product has an equivalent or very similar product in the US list.
+
+JAPANESE PRODUCT (may contain Japanese characters - understand what it is):
+"{jp_product_name}"
+
+US PRODUCTS LIST:
+{us_products_text}
+
+INSTRUCTIONS:
+1. Read and understand what the Japanese product actually IS (translate mentally if needed)
+2. Look for the SAME or VERY SIMILAR product type in the US list
+3. Consider: same function, same use case, same category
+
+RESPOND WITH ONLY:
+- If match found: Just the number (e.g., "5")
+- If no match: "0"
+
+Do NOT explain. Just respond with the number."""
+
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",  # Cheaper model for simple matching
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0,
+            max_tokens=10
+        )
+        
+        result = response.choices[0].message.content.strip()
+        
+        # Parse the result
+        try:
+            match_idx = int(result)
+            if match_idx > 0 and match_idx <= len(us_products[:30]):
+                matched_product = us_products[match_idx - 1].copy()
+                matched_product['_similarity_score'] = 0.85  # AI match = high confidence
+                matched_product['_match_type'] = 'ai_semantic'
+                return matched_product
+        except ValueError:
+            pass
+        
+        return None
+        
+    except Exception as e:
+        # Silently fall back to keyword matching
+        return None
+
+
 def find_similar_in_list(
     product: dict,
     product_list: list[dict],
-    threshold: float = 0.3
+    threshold: float = 0.3,
+    use_ai_matching: bool = True
 ) -> Optional[dict]:
     """
     Find most similar product in a list.
+    Uses AI semantic matching for Japanese names, falls back to keywords.
     
     Args:
         product: Product to find match for
         product_list: List of products to search
         threshold: Minimum similarity score (0-1)
+        use_ai_matching: If True, try AI matching first for non-English names
     
     Returns:
         Best matching product or None if no match above threshold
@@ -91,6 +183,16 @@ def find_similar_in_list(
     if not product_name:
         return None
     
+    # Check if name contains non-ASCII (Japanese, Chinese, etc.)
+    has_non_ascii = any(ord(char) > 127 for char in product_name)
+    
+    # Try AI semantic matching first for non-English names
+    if use_ai_matching and has_non_ascii:
+        ai_match = ai_semantic_match(product_name, product_list)
+        if ai_match:
+            return ai_match
+    
+    # Fall back to keyword-based matching
     best_match = None
     best_score = 0
     
@@ -102,7 +204,8 @@ def find_similar_in_list(
             best_score = score
             best_match = {
                 **candidate,
-                '_similarity_score': score
+                '_similarity_score': score,
+                '_match_type': 'keyword'
             }
     
     return best_match
