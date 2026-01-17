@@ -361,10 +361,11 @@ def find_opportunities(
                     'reason': 'No similar product found in US market'
                 }
                 opportunities.append(opportunity)
-            else:
-                # Match found but might still be opportunity if US version underperforms
-                us_reviews = us_match.get('reviewsCount', 0) or 0
-                score = us_match.get('_similarity_score', 0)
+                continue  # Skip to next product - no further comparison needed
+            
+            # Match found but might still be opportunity if US version underperforms
+            us_reviews = us_match.get('reviewsCount', 0) or 0
+            score = us_match.get('_similarity_score', 0)
             
             # If JP has significantly more reviews, it's still an opportunity
             if jp_reviews > us_reviews * 3:  # JP has 3x more reviews
@@ -386,7 +387,7 @@ def find_opportunities(
                     },
                     'similarity_score': score,
                     'opportunity_score': calculate_opportunity_score(jp_product, us_match),
-                    'reason': f'JP product has {jp_reviews/us_reviews:.1f}x more reviews than US equivalent'
+                    'reason': f'JP product has {jp_reviews/max(us_reviews, 1):.1f}x more reviews than US equivalent'
                 }
                 opportunities.append(opportunity)
     
