@@ -832,6 +832,7 @@ def display_results(opportunities, source_market, target_market, market_options,
         'jp_stars': 'Rating',
         'jp_price': 'Price',
         'jp_url': 'URL',
+        'jp_thumbnail': 'Thumbnail',
         'reason': 'Reason'
     })
     
@@ -844,21 +845,32 @@ def display_results(opportunities, source_market, target_market, market_options,
     for idx, row in df.head(5).iterrows():
         product_name = row.get('Product Name', 'Unknown')[:60]
         product_url = row.get('URL', '')
+        thumbnail_url = row.get('Thumbnail', '')
         
         with st.expander(f"**[{row['Score']:.0f}]** {product_name}...", expanded=(idx == 0)):
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                st.metric("Reviews", f"{row['Reviews']:,}")
-            with col2:
-                st.metric("Rating", f"⭐ {row['Rating']}")
-            with col3:
-                st.metric("Price", row['Price'])
+            # Show thumbnail if available
+            img_col, info_col = st.columns([1, 3])
+            
+            with img_col:
+                if thumbnail_url:
+                    st.image(thumbnail_url, width=120)
+                else:
+                    st.write("📷 No image")
+            
+            with info_col:
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    st.metric("Reviews", f"{row['Reviews']:,}")
+                with col2:
+                    st.metric("Rating", f"⭐ {row['Rating']}")
+                with col3:
+                    st.metric("Price", row['Price'])
             
             st.caption(row['Reason'])
             
             # Add clickable link button
             if product_url:
-                st.link_button("🔗 View on Amazon", product_url)
+                st.link_button("🔗 View Product", product_url)
     
     # Full table with clickable links
     st.subheader("📋 All Results")

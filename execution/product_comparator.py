@@ -164,17 +164,19 @@ def find_similar_in_list(
     product: dict,
     product_list: list[dict],
     threshold: float = 0.3,
-    use_ai_matching: bool = True
+    use_ai_matching: bool = True,
+    force_ai: bool = False
 ) -> Optional[dict]:
     """
     Find most similar product in a list.
-    Uses AI semantic matching for Japanese names, falls back to keywords.
+    Uses AI semantic matching for Japanese names or when forced, falls back to keywords.
     
     Args:
         product: Product to find match for
         product_list: List of products to search
         threshold: Minimum similarity score (0-1)
         use_ai_matching: If True, try AI matching first for non-English names
+        force_ai: If True, always try AI matching (for AliExpress weird English names)
     
     Returns:
         Best matching product or None if no match above threshold
@@ -186,8 +188,8 @@ def find_similar_in_list(
     # Check if name contains non-ASCII (Japanese, Chinese, etc.)
     has_non_ascii = any(ord(char) > 127 for char in product_name)
     
-    # Try AI semantic matching first for non-English names
-    if use_ai_matching and has_non_ascii:
+    # Try AI semantic matching for non-English names OR when forced (AliExpress)
+    if use_ai_matching and (has_non_ascii or force_ai):
         ai_match = ai_semantic_match(product_name, product_list)
         if ai_match:
             return ai_match
@@ -258,9 +260,9 @@ def find_opportunities(
             continue
 
         if is_universal_source:
-            # === UNIVERSAL STRATEGY: ARBITRAGE with SIMILARITY MATCHING ===
-            # First try to find a SIMILAR product in Target Market
-            similar_match = find_similar_in_list(jp_product, us_products, threshold=0.2)
+            # === UNIVERSAL STRATEGY: ARBITRAGE with AI SEMANTIC MATCHING ===
+            # For AliExpress, always use AI matching (names are often weird English)
+            similar_match = find_similar_in_list(jp_product, us_products, threshold=0.2, use_ai_matching=True, force_ai=True)
             
             # If no similar found, fall back to best seller for price reference
             if similar_match is None:
@@ -495,6 +497,7 @@ def opportunities_to_csv_rows(opportunities: dict[str, list[dict]]) -> list[dict
                 'jp_reviews': jp.get('reviewsCount', ''),
                 'jp_position': jp.get('position', ''),
                 'jp_url': jp.get('url', ''),
+                'jp_thumbnail': jp.get('thumbnailUrl', ''),  # Add thumbnail for image display
                 'us_match_name': us.get('name', ''),
                 'us_match_reviews': us.get('reviewsCount', ''),
                 'similarity_score': opp.get('similarity_score', 0),
