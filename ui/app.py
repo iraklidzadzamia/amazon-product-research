@@ -24,7 +24,7 @@ from product_comparator import (
     compare_markets,
     opportunities_to_csv_rows
 )
-from ai_analyzer import analyze_opportunities
+from ai_analyzer import analyze_opportunities, format_products_for_analysis
 
 # Page config
 st.set_page_config(
@@ -485,6 +485,102 @@ def main():
             if st.session_state.ai_analysis:
                 st.markdown("---")
                 st.markdown(st.session_state.ai_analysis)
+                
+                # === AI CHAT INTERFACE ===
+                st.markdown("---")
+                st.subheader("💬 Обсудить с AI")
+                st.markdown("Задайте вопросы о продуктах, попросите детали или обсудите стратегию")
+                
+                # Initialize chat history if not exists
+                if 'chat_messages' not in st.session_state:
+                    st.session_state.chat_messages = []
+                
+                # Display chat history
+                for message in st.session_state.chat_messages:
+                    with st.chat_message(message["role"]):
+                        st.markdown(message["content"])
+                
+                # Chat input
+                if user_message := st.chat_input("Напишите вопрос о продуктах..."):
+                    # Add user message to history
+                    st.session_state.chat_messages.append({"role": "user", "content": user_message})
+                    
+                    # Display user message
+                    with st.chat_message("user"):
+                        st.markdown(user_message)
+                    
+                    # Generate AI response
+                    with st.chat_message("assistant"):
+                        with st.spinner("🤔 Думаю..."):
+                            try:
+                                from openai import OpenAI
+                                import os
+                                
+                                # Get API key
+                                api_key = None
+                                try:
+                                    if "OPENAI_API_KEY" in st.secrets:
+                                        api_key = st.secrets["OPENAI_API_KEY"]
+                                except:
+                                    pass
+                                if not api_key:
+                                    api_key = os.getenv("OPENAI_API_KEY")
+                                
+                                if not api_key:
+                                    st.error("OpenAI API key not found")
+                                else:
+                                    client = OpenAI(api_key=api_key)
+                                    
+                                    # Build context from analysis results
+                                    products_context = format_products_for_analysis(
+                                        st.session_state.analysis_results, 
+                                        params.get('source_code', 'source'), 
+                                        params.get('target_code', 'target')
+                                    )
+                                    
+                                    # Build messages for API
+                                    messages = [
+                                        {
+                                            "role": "system", 
+                                            "content": f"""Ты эксперт по Amazon FBA и арбитражу. 
+У тебя есть данные о продуктах и предыдущий анализ.
+
+КОНТЕКСТ ПРОДУКТОВ:
+{products_context[:3000]}
+
+ПРЕДЫДУЩИЙ АНАЛИЗ:
+{st.session_state.ai_analysis[:2000]}
+
+Отвечай на русском языке. Будь конкретным, ссылайся на реальные продукты из данных.
+Если спрашивают о конкретном продукте — дай детальный анализ с расчётами."""
+                                        }
+                                    ]
+                                    
+                                    # Add chat history
+                                    for msg in st.session_state.chat_messages[-10:]:  # Last 10 messages
+                                        messages.append({"role": msg["role"], "content": msg["content"]})
+                                    
+                                    response = client.chat.completions.create(
+                                        model="gpt-4o",
+                                        messages=messages,
+                                        temperature=0.7,
+                                        max_tokens=2000
+                                    )
+                                    
+                                    ai_response = response.choices[0].message.content
+                                    st.markdown(ai_response)
+                                    
+                                    # Add AI response to history
+                                    st.session_state.chat_messages.append({"role": "assistant", "content": ai_response})
+                                    
+                            except Exception as e:
+                                st.error(f"Ошибка AI: {e}")
+                
+                # Clear chat button
+                if st.session_state.chat_messages:
+                    if st.button("🗑️ Очистить чат", key="clear_chat_btn"):
+                        st.session_state.chat_messages = []
+                        st.rerun()
             
             st.divider()
             
@@ -493,6 +589,7 @@ def main():
                 st.session_state.analysis_results = None
                 st.session_state.analysis_params = None
                 st.session_state.ai_analysis = None
+                st.session_state.chat_messages = []
                 st.rerun()
     
     with tab2:
