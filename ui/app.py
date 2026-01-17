@@ -433,8 +433,8 @@ def main():
                 if result:
                     st.session_state.analysis_results = result
                     st.session_state.analysis_params = {
-                        'source': market_options[source_market],
-                        'target': market_options[target_market],
+                        'source': market_options.get(source_market, "🌐 Custom Site (AI Agent)"),
+                        'target': market_options.get(target_market, target_market),
                         'source_code': source_market,
                         'target_code': target_market,
                         'time': datetime.now().strftime('%H:%M:%S')
